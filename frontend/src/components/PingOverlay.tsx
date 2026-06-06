@@ -60,7 +60,7 @@ export default function PingOverlay({ reminder, onResolved }: Props) {
   return (
     <div style={{
       position: 'fixed', inset: 0, zIndex: 9999,
-      background: 'rgba(0,0,0,0.85)',
+      background: 'rgba(0,0,0,0.5)',
       backdropFilter: 'blur(8px)',
       WebkitBackdropFilter: 'blur(8px)',
       display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -69,35 +69,36 @@ export default function PingOverlay({ reminder, onResolved }: Props) {
     }}>
       <div style={{
         background: 'var(--color-bg)',
-        border: '0.5px solid var(--color-border)',
+        border: '1px solid var(--color-border)',
         borderRadius: 'var(--radius-lg)',
-        boxShadow: '0 10px 30px rgba(0,0,0,0.3)',
-        padding: 28,
+        boxShadow: '0 20px 50px rgba(0,0,0,0.3)',
+        padding: 32,
         width: '100%',
-        maxWidth: 400,
+        maxWidth: 420,
         display: 'flex',
         flexDirection: 'column',
-        animation: 'scaleUp 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)'
+        animation: 'scaleUp 0.3s cubic-bezier(0.16, 1, 0.3, 1)'
       }}>
         {/* Header Label */}
         <p style={{ 
-          fontSize: 12, 
-          fontWeight: 600, 
-          color: 'var(--color-accent)', 
+          fontSize: 11, 
+          fontWeight: 700, 
+          color: 'var(--color-text-tertiary)', 
           textTransform: 'uppercase', 
-          tracking: '0.1em',
+          letterSpacing: '0.08em',
           marginBottom: 8 
         }}>
-          Reminder
+          Reminder Alert
         </p>
 
         {/* Reminder Text */}
         <p style={{ 
           fontSize: 22, 
-          fontWeight: 600, 
-          lineHeight: 1.3,
+          fontWeight: 700, 
+          lineHeight: 1.35,
           color: 'var(--color-text)',
-          marginBottom: 28 
+          marginBottom: 28,
+          letterSpacing: '-0.01em'
         }}>
           {reminder.text}
         </p>
@@ -107,15 +108,13 @@ export default function PingOverlay({ reminder, onResolved }: Props) {
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
             <button 
               onClick={handleDone} 
+              className="primary"
               style={{ 
-                background: 'var(--color-success)', 
-                color: '#fff', 
-                border: 'none', 
                 padding: '16px', 
                 borderRadius: 'var(--radius-md)', 
-                fontWeight: 600,
+                fontWeight: 700,
                 fontSize: 16,
-                boxShadow: '0 2px 8px rgba(15,110,86,0.2)'
+                width: '100%'
               }}
             >
               ✓ Done
@@ -125,8 +124,10 @@ export default function PingOverlay({ reminder, onResolved }: Props) {
               style={{ 
                 padding: '14px', 
                 fontSize: 15,
-                fontWeight: 500,
-                borderColor: 'var(--color-border)'
+                fontWeight: 600,
+                borderColor: 'var(--color-border)',
+                background: 'var(--color-bg)',
+                width: '100%'
               }}
             >
               Snooze
@@ -136,8 +137,10 @@ export default function PingOverlay({ reminder, onResolved }: Props) {
               style={{ 
                 padding: '14px',
                 fontSize: 15,
-                fontWeight: 500,
-                borderColor: 'var(--color-border)'
+                fontWeight: 600,
+                borderColor: 'var(--color-border)',
+                background: 'var(--color-bg)',
+                width: '100%'
               }}
             >
               Push to later
@@ -148,14 +151,14 @@ export default function PingOverlay({ reminder, onResolved }: Props) {
         {/* Snooze Screen */}
         {screen === 'snooze' && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-            <p style={{ fontSize: 14, fontWeight: 500, color: 'var(--color-text-secondary)' }}>Snooze for how long?</p>
+            <p style={{ fontSize: 13, fontWeight: 700, color: 'var(--color-text-secondary)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Snooze for how long?</p>
             
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
               {[5, 15, 30, 60, 180].map(m => (
                 <button 
                   key={m} 
                   onClick={() => handleSnooze(m)}
-                  style={{ padding: '12px 8px', fontSize: 14, fontWeight: 500 }}
+                  style={{ padding: '12px 8px', fontSize: 14, fontWeight: 600, border: '1px solid var(--color-border)', background: 'var(--color-bg)' }}
                 >
                   {m < 60 ? `${m} min` : `${m / 60} hr`}
                 </button>
@@ -169,12 +172,13 @@ export default function PingOverlay({ reminder, onResolved }: Props) {
                 placeholder="Custom minutes"
                 value={snoozeInput}
                 onChange={e => setSnoozeInput(e.target.value.slice(0, 3))}
-                style={{ flex: 1 }}
+                style={{ flex: 1, border: '1px solid var(--color-border)', borderRadius: 'var(--radius-md)', background: 'var(--color-bg)' }}
               />
               {snoozeInput && (
                 <button 
                   onClick={() => handleSnooze(parseInt(snoozeInput))}
-                  style={{ background: 'var(--color-accent)', color: '#fff', border: 'none', padding: '10px 16px', fontWeight: 600 }}
+                  className="primary"
+                  style={{ padding: '10px 16px', fontWeight: 700 }}
                 >
                   Confirm
                 </button>
@@ -190,7 +194,7 @@ export default function PingOverlay({ reminder, onResolved }: Props) {
                 background: 'none',
                 alignSelf: 'center',
                 fontSize: 13,
-                fontWeight: 500
+                fontWeight: 600
               }}
             >
               ← Back
@@ -201,16 +205,16 @@ export default function PingOverlay({ reminder, onResolved }: Props) {
         {/* Push Day Screen */}
         {screen === 'push-day' && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-            <p style={{ fontSize: 14, fontWeight: 500, color: 'var(--color-text-secondary)', marginBottom: 4 }}>When would you like to push this to?</p>
+            <p style={{ fontSize: 13, fontWeight: 700, color: 'var(--color-text-secondary)', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: 4 }}>When would you like to push this to?</p>
             <button 
               onClick={() => setScreen(todayOptions.length ? 'push-today' : 'push-tomorrow')}
-              style={{ padding: '14px', fontSize: 15, fontWeight: 500 }}
+              style={{ padding: '14px', fontSize: 15, fontWeight: 600, border: '1px solid var(--color-border)', background: 'var(--color-bg)' }}
             >
               Today
             </button>
             <button 
               onClick={() => setScreen('push-tomorrow')}
-              style={{ padding: '14px', fontSize: 15, fontWeight: 500 }}
+              style={{ padding: '14px', fontSize: 15, fontWeight: 600, border: '1px solid var(--color-border)', background: 'var(--color-bg)' }}
             >
               Tomorrow
             </button>
@@ -223,7 +227,7 @@ export default function PingOverlay({ reminder, onResolved }: Props) {
                 background: 'none',
                 alignSelf: 'center',
                 fontSize: 13,
-                fontWeight: 500
+                fontWeight: 600
               }}
             >
               ← Back
@@ -237,7 +241,7 @@ export default function PingOverlay({ reminder, onResolved }: Props) {
             {todayOptions.length === 0 ? (
               <p style={{ fontSize: 13, color: 'var(--color-text-secondary)' }}>Tonight has passed — showing tomorrow's options.</p>
             ) : (
-              <p style={{ fontSize: 14, fontWeight: 500, color: 'var(--color-text-secondary)' }}>Available slots for today:</p>
+              <p style={{ fontSize: 13, fontWeight: 700, color: 'var(--color-text-secondary)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Available slots for today:</p>
             )}
             
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
@@ -248,10 +252,12 @@ export default function PingOverlay({ reminder, onResolved }: Props) {
                   style={{ 
                     padding: '14px 16px', 
                     fontSize: 14, 
-                    fontWeight: 500,
+                    fontWeight: 600,
                     display: 'flex',
                     justifyContent: 'space-between',
-                    alignItems: 'center'
+                    alignItems: 'center',
+                    border: '1px solid var(--color-border)',
+                    background: 'var(--color-bg)'
                   }}
                 >
                   <span>{opt.label}</span>
@@ -271,7 +277,7 @@ export default function PingOverlay({ reminder, onResolved }: Props) {
                 background: 'none',
                 alignSelf: 'center',
                 fontSize: 13,
-                fontWeight: 500
+                fontWeight: 600
               }}
             >
               ← Back
@@ -285,7 +291,7 @@ export default function PingOverlay({ reminder, onResolved }: Props) {
             {tonightPast ? (
               <p style={{ fontSize: 13, color: 'var(--color-text-secondary)' }}>Tonight's options have passed. Schedule for tomorrow:</p>
             ) : (
-              <p style={{ fontSize: 14, fontWeight: 500, color: 'var(--color-text-secondary)' }}>Tomorrow's preset times:</p>
+              <p style={{ fontSize: 13, fontWeight: 700, color: 'var(--color-text-secondary)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Tomorrow's preset times:</p>
             )}
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
@@ -296,10 +302,12 @@ export default function PingOverlay({ reminder, onResolved }: Props) {
                   style={{ 
                     padding: '14px 16px', 
                     fontSize: 14, 
-                    fontWeight: 500,
+                    fontWeight: 600,
                     display: 'flex',
                     justifyContent: 'space-between',
-                    alignItems: 'center'
+                    alignItems: 'center',
+                    border: '1px solid var(--color-border)',
+                    background: 'var(--color-bg)'
                   }}
                 >
                   <span>{opt.label}</span>
@@ -320,7 +328,7 @@ export default function PingOverlay({ reminder, onResolved }: Props) {
                   background: 'none',
                   alignSelf: 'center',
                   fontSize: 13,
-                  fontWeight: 500
+                  fontWeight: 600
                 }}
               >
                 ← Back

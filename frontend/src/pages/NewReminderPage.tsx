@@ -95,23 +95,23 @@ export default function NewReminderPage({ onSaved }: Props) {
   }
 
   return (
-    <div style={{ padding: 16, maxWidth: 600, margin: '0 auto', display: 'flex', flexDirection: 'column', gap: 20 }}>
+    <div style={{ padding: '24px 16px 80px 16px', maxWidth: 540, margin: '0 auto', display: 'flex', flexDirection: 'column', gap: 28, animation: 'fadeIn 0.3s ease-out' }}>
       {/* Header */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
         <button 
           onClick={() => navigate(-1)} 
-          style={{ border: 'none', background: 'none', padding: '4px 8px', fontSize: 16, display: 'flex', alignItems: 'center' }}
+          style={{ border: '1px solid var(--color-border)', background: 'var(--color-bg)', padding: '6px 12px', fontSize: 13, borderRadius: 'var(--radius-md)' }}
         >
           ← Back
         </button>
-        <h1 style={{ fontSize: 20, fontWeight: 600 }}>New reminder</h1>
+        <h1 style={{ fontSize: 20, fontWeight: 700, letterSpacing: '-0.02em' }}>New Reminder</h1>
       </div>
 
       {/* Form Container */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
         {/* Reminder Text */}
         <div>
-          <label style={{ fontSize: 12, fontWeight: 600, color: 'var(--color-text-secondary)', display: 'block', marginBottom: 6, textTransform: 'uppercase' }}>
+          <label style={{ fontSize: 11, fontWeight: 700, color: 'var(--color-text-secondary)', display: 'block', marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
             What do you need to be reminded of?
           </label>
           <textarea
@@ -123,16 +123,16 @@ export default function NewReminderPage({ onSaved }: Props) {
             placeholder="e.g. Call the bank, take medication"
             rows={4}
             autoFocus
-            style={{ width: '100%', resize: 'none' }}
+            style={{ width: '100%', resize: 'none', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-lg)' }}
           />
           {errors.text && (
-            <span style={{ fontSize: 12, color: 'var(--color-danger)', marginTop: 4, display: 'block' }}>{errors.text}</span>
+            <span style={{ fontSize: 12, color: 'var(--color-danger)', marginTop: 6, display: 'block', fontWeight: 500 }}>{errors.text}</span>
           )}
         </div>
 
         {/* Date + Time Picker */}
         <div>
-          <label style={{ fontSize: 12, fontWeight: 600, color: 'var(--color-text-secondary)', display: 'block', marginBottom: 6, textTransform: 'uppercase' }}>
+          <label style={{ fontSize: 11, fontWeight: 700, color: 'var(--color-text-secondary)', display: 'block', marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
             First Ping Time
           </label>
           <input
@@ -143,15 +143,16 @@ export default function NewReminderPage({ onSaved }: Props) {
               setScheduledAt(e.target.value)
               if (errors.scheduledAt) setErrors({ ...errors, scheduledAt: undefined })
             }}
+            style={{ border: '1px solid var(--color-border)', borderRadius: 'var(--radius-md)' }}
           />
           {errors.scheduledAt && (
-            <span style={{ fontSize: 12, color: 'var(--color-danger)', marginTop: 4, display: 'block' }}>{errors.scheduledAt}</span>
+            <span style={{ fontSize: 12, color: 'var(--color-danger)', marginTop: 6, display: 'block', fontWeight: 500 }}>{errors.scheduledAt}</span>
           )}
         </div>
 
         {/* Recurrence Selector */}
         <div>
-          <label style={{ fontSize: 12, fontWeight: 600, color: 'var(--color-text-secondary)', display: 'block', marginBottom: 6, textTransform: 'uppercase' }}>
+          <label style={{ fontSize: 11, fontWeight: 700, color: 'var(--color-text-secondary)', display: 'block', marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
             Repeat
           </label>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8, marginBottom: 12 }}>
@@ -163,10 +164,11 @@ export default function NewReminderPage({ onSaved }: Props) {
                 style={{
                   padding: '10px 4px',
                   fontSize: 13,
-                  fontWeight: recurrenceType === type ? 600 : 400,
-                  background: recurrenceType === type ? 'var(--color-accent)' : 'transparent',
-                  color: recurrenceType === type ? '#fff' : 'var(--color-text)',
-                  borderColor: recurrenceType === type ? 'var(--color-accent)' : 'var(--color-border)'
+                  fontWeight: recurrenceType === type ? 700 : 500,
+                  background: recurrenceType === type ? 'var(--color-text)' : 'transparent',
+                  color: recurrenceType === type ? 'var(--color-bg)' : 'var(--color-text)',
+                  borderColor: recurrenceType === type ? 'var(--color-text)' : 'var(--color-border)',
+                  borderRadius: 'var(--radius-md)'
                 }}
               >
                 {type.charAt(0).toUpperCase() + type.slice(1)}
@@ -175,28 +177,29 @@ export default function NewReminderPage({ onSaved }: Props) {
           </div>
 
           {recurrenceType === 'custom' && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, animation: 'fadeIn 0.15s ease-out' }}>
-              <span style={{ fontSize: 14 }}>Every</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: 8, background: 'var(--color-bg-secondary)', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)', animation: 'slideUp 0.15s ease-out' }}>
+              <span style={{ fontSize: 13, fontWeight: 600 }}>Every</span>
               <input
                 type="number"
                 min="1"
                 value={customInterval}
                 onChange={e => setCustomInterval(e.target.value)}
-                style={{ width: 80, padding: '6px 10px' }}
+                style={{ width: 80, padding: '6px 10px', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-sm)' }}
               />
-              <span style={{ fontSize: 14 }}>minutes</span>
+              <span style={{ fontSize: 13, fontWeight: 600 }}>minutes</span>
             </div>
           )}
         </div>
 
         {/* Category Dropdown */}
         <div>
-          <label style={{ fontSize: 12, fontWeight: 600, color: 'var(--color-text-secondary)', display: 'block', marginBottom: 6, textTransform: 'uppercase' }}>
+          <label style={{ fontSize: 11, fontWeight: 700, color: 'var(--color-text-secondary)', display: 'block', marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
             Category
           </label>
           <select
             value={categoryId}
             onChange={e => setCategoryId(e.target.value)}
+            style={{ border: '1px solid var(--color-border)', borderRadius: 'var(--radius-md)', background: 'var(--color-bg)' }}
           >
             {categories.map(cat => (
               <option key={cat.id} value={cat.id}>
@@ -210,16 +213,14 @@ export default function NewReminderPage({ onSaved }: Props) {
       {/* Save Button */}
       <button
         onClick={handleSave}
+        className="primary"
         style={{
           width: '100%',
-          background: 'var(--color-accent)',
-          color: '#fff',
-          border: 'none',
           padding: 16,
-          fontSize: 16,
-          fontWeight: 600,
+          fontSize: 15,
+          fontWeight: 700,
           borderRadius: 'var(--radius-lg)',
-          marginTop: 20
+          marginTop: 12
         }}
       >
         Save Reminder

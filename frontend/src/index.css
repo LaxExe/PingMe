@@ -5,28 +5,35 @@
 }
 
 :root {
+  /* Clean Light Theme: Monochromatic Zinc Scale */
   --color-bg: #ffffff;
-  --color-bg-secondary: #f7f7f5;
-  --color-bg-tertiary: #f0eeea;
-  --color-text: #1a1a18;
-  --color-text-secondary: #6b6b67;
-  --color-text-tertiary: #9b9b97;
-  --color-border: rgba(0,0,0,0.10);
-  --color-border-strong: rgba(0,0,0,0.20);
-  --color-accent: #3C3489;
-  --color-accent-bg: #EEEDFE;
-  --color-success: #0F6E56;
-  --color-success-bg: #E1F5EE;
-  --color-warning: #633806;
-  --color-warning-bg: #FAEEDA;
-  --color-danger: #712B13;
-  --color-danger-bg: #FAECE7;
-  --radius-sm: 6px;
-  --radius-md: 10px;
-  --radius-lg: 14px;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  font-size: 16px;
-  line-height: 1.5;
+  --color-bg-secondary: #f4f4f5; /* Zinc 100 */
+  --color-bg-tertiary: #e4e4e7; /* Zinc 200 */
+  --color-text: #09090b; /* Zinc 950 */
+  --color-text-secondary: #52525b; /* Zinc 600 */
+  --color-text-tertiary: #a1a1aa; /* Zinc 400 */
+  --color-border: #e4e4e7; /* Zinc 200 */
+  --color-border-strong: #09090b; /* Zinc 950 */
+  
+  /* Accent is pure Black in light mode */
+  --color-accent: #09090b;
+  --color-accent-bg: #f4f4f5;
+  
+  /* Minimal semantic helpers (Monochromatic style) */
+  --color-success: #09090b;
+  --color-success-bg: #f4f4f5;
+  --color-warning: #09090b;
+  --color-warning-bg: #fafafa;
+  --color-danger: #e11d48; /* Grayscale layout but keeping a high-end crimson for actual errors */
+  --color-danger-bg: #fff1f2;
+  
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-size: 15px;
+  line-height: 1.6;
   color: var(--color-text);
   background: var(--color-bg);
   -webkit-font-smoothing: antialiased;
@@ -34,25 +41,33 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --color-bg: #1a1a18;
-    --color-bg-secondary: #242422;
-    --color-bg-tertiary: #2c2c2a;
-    --color-text: #f0eeea;
-    --color-text-secondary: #a0a09c;
-    --color-text-tertiary: #6b6b67;
-    --color-border: rgba(255,255,255,0.10);
-    --color-border-strong: rgba(255,255,255,0.20);
-    --color-accent: #AFA9EC;
-    --color-accent-bg: #26215C;
-    --color-success-bg: #04342C;
-    --color-warning-bg: #412402;
-    --color-danger-bg: #4A1B0C;
+    /* Clean Dark Theme: Monochromatic Zinc Scale */
+    --color-bg: #09090b; /* Zinc 950 */
+    --color-bg-secondary: #18181b; /* Zinc 900 */
+    --color-bg-tertiary: #27272a; /* Zinc 800 */
+    --color-text: #f4f4f5; /* Zinc 100 */
+    --color-text-secondary: #a1a1aa; /* Zinc 400 */
+    --color-text-tertiary: #71717a; /* Zinc 500 */
+    --color-border: #27272a; /* Zinc 800 */
+    --color-border-strong: #f4f4f5; /* Zinc 100 */
+    
+    /* Accent is pure White in dark mode */
+    --color-accent: #f4f4f5;
+    --color-accent-bg: #18181b;
+    
+    --color-success: #f4f4f5;
+    --color-success-bg: #18181b;
+    --color-warning: #f4f4f5;
+    --color-warning-bg: #18181b;
+    --color-danger: #f43f5e;
+    --color-danger-bg: #271216;
   }
 }
 
 body {
   min-height: 100dvh;
   background: var(--color-bg);
+  color: var(--color-text);
 }
 
 #root {
@@ -61,39 +76,204 @@ body {
   flex-direction: column;
 }
 
+/* Base Form Styles with Clean Outlines */
 button {
   cursor: pointer;
   font-family: inherit;
   font-size: 14px;
-  border: 0.5px solid var(--color-border-strong);
+  font-weight: 500;
+  border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
-  background: transparent;
+  background: var(--color-bg);
   color: var(--color-text);
   padding: 8px 16px;
-  transition: background 0.1s, opacity 0.1s;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
 }
 
-button:hover { background: var(--color-bg-secondary); }
-button:active { opacity: 0.7; }
+button:hover {
+  background: var(--color-bg-secondary);
+  border-color: var(--color-text-secondary);
+}
+
+button:active {
+  transform: scale(0.98);
+}
+
+button.primary {
+  background: var(--color-text);
+  color: var(--color-bg);
+  border-color: var(--color-text);
+}
+
+button.primary:hover {
+  background: var(--color-text-secondary);
+  border-color: var(--color-text-secondary);
+}
+
+button.danger {
+  color: var(--color-danger);
+  border-color: var(--color-border);
+}
+button.danger:hover {
+  background: var(--color-danger-bg);
+  border-color: var(--color-danger);
+}
 
 input, select, textarea {
   font-family: inherit;
   font-size: 14px;
   color: var(--color-text);
-  background: var(--color-bg-secondary);
-  border: 0.5px solid var(--color-border);
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
   padding: 10px 14px;
   outline: none;
   width: 100%;
-  transition: border-color 0.15s;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 input:focus, select:focus, textarea:focus {
-  border-color: var(--color-accent);
+  border-color: var(--color-text);
+  box-shadow: 0 0 0 1px var(--color-text);
 }
 
 a {
-  color: var(--color-accent);
-  text-decoration: none;
+  color: var(--color-text);
+  text-decoration: underline;
+  text-underline-offset: 4px;
+  font-weight: 500;
+  transition: opacity 0.2s;
+}
+
+a:hover {
+  opacity: 0.8;
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { transform: translateY(12px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes scaleUp {
+  from { transform: scale(0.96); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+/* Responsive Dashboard Layout classes */
+.app-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  width: 100%;
+}
+
+.dashboard-layout {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  width: 100%;
+  max-width: 680px;
+  margin: 0 auto;
+  padding: 16px 16px 80px 16px;
+  animation: fadeIn 0.4s ease-out;
+}
+
+.desktop-sidebar {
+  display: none;
+}
+
+@media (min-width: 769px) {
+  .app-container {
+    flex-direction: row;
+  }
+
+  .dashboard-layout {
+    flex: 1;
+    max-width: 800px;
+    margin: 0;
+    padding: 32px 48px;
+  }
+
+  .desktop-sidebar {
+    display: flex;
+    flex-direction: column;
+    width: 260px;
+    border-right: 1px solid var(--color-border);
+    background: var(--color-bg);
+    padding: 32px 24px;
+    gap: 32px;
+    flex-shrink: 0;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+  }
+}
+
+/* Reminder Card Desktop Hover Buttons */
+.reminder-card-container {
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--radius-lg);
+  transition: border-color 0.2s;
+}
+
+.reminder-card-content {
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  padding: 14px 16px;
+  border-radius: var(--radius-lg);
+  display: flex;
+  flex-direction: column;
+  gap: 6;
+  position: relative;
+  z-index: 2;
+  transition: transform 0.2s ease-out, border-color 0.2s;
+}
+
+.reminder-card-content:hover {
+  border-color: var(--color-text-secondary);
+}
+
+.desktop-action-btn {
+  display: none;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+@media (min-width: 769px) {
+  .reminder-card-content {
+    padding-right: 80px; /* Leave space for hover actions */
+  }
+
+  .reminder-card-content:hover .desktop-action-btn {
+    display: inline-flex;
+    opacity: 1;
+  }
+}
+
+/* Hide/Show utilities */
+.mobile-only {
+  display: block;
+}
+.desktop-only {
+  display: none;
+}
+
+@media (min-width: 769px) {
+  .mobile-only {
+    display: none !important;
+  }
+  .desktop-only {
+    display: block !important;
+  }
 }
