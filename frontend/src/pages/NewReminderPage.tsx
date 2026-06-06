@@ -104,14 +104,7 @@ export default function NewReminderPage({ onSaved }: Props) {
   return (
     <div className="dashboard-layout">
       {/* Header */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 32 }}>
-        <button 
-          onClick={() => navigate(-1)} 
-          style={{ border: '1px solid var(--color-border)', background: 'var(--color-bg)', padding: '8px 14px', fontSize: 13, borderRadius: 'var(--radius-md)', display: 'inline-flex', alignItems: 'center' }}
-        >
-          <ArrowLeftIcon />
-          <span>Back</span>
-        </button>
+      <div style={{ marginBottom: 32 }}>
         <h1 style={{ fontSize: 28, fontWeight: 800, letterSpacing: '-0.03em', color: 'var(--color-text)' }}>New Reminder</h1>
       </div>
 
@@ -218,21 +211,36 @@ export default function NewReminderPage({ onSaved }: Props) {
         </div>
       </div>
 
-      {/* Save Button */}
-      <button
-        onClick={handleSave}
-        className="primary"
-        style={{
-          width: '100%',
-          padding: 16,
-          fontSize: 15,
-          fontWeight: 700,
-          borderRadius: 'var(--radius-lg)',
-          marginTop: 32
-        }}
-      >
-        Save Reminder
-      </button>
+      {/* Action Buttons */}
+      <div style={{ display: 'flex', gap: 12, marginTop: 32 }}>
+        <button
+          onClick={() => navigate('/')}
+          style={{
+            flex: 1,
+            padding: 16,
+            fontSize: 15,
+            fontWeight: 700,
+            borderRadius: 'var(--radius-lg)',
+            border: '1px solid var(--color-border)',
+            background: 'transparent'
+          }}
+        >
+          Inbox
+        </button>
+        <button
+          onClick={handleSave}
+          className="primary"
+          style={{
+            flex: 2,
+            padding: 16,
+            fontSize: 15,
+            fontWeight: 700,
+            borderRadius: 'var(--radius-lg)'
+          }}
+        >
+          Save Reminder
+        </button>
+      </div>
     </div>
   )
 }

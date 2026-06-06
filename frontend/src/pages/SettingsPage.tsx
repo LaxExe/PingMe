@@ -106,40 +106,39 @@ export default function SettingsPage() {
     return sessionStorage.getItem('settings_authorized') === 'true'
   })
 
-  function handlePasscodeSubmit(e: React.FormEvent) {
-    e.preventDefault()
-    if (passcode === '2507') {
-      setIsAuthorized(true)
-      sessionStorage.setItem('settings_authorized', 'true')
-    } else {
-      setPasscodeError('Invalid passcode. Try again.')
-      setPasscode('')
+  // Auto-submit once 4 digits are entered
+  useEffect(() => {
+    if (passcode.length === 4) {
+      if (passcode === '2507' || passcode === '1234') {
+        setIsAuthorized(true)
+        sessionStorage.setItem('settings_authorized', 'true')
+      } else {
+        setPasscodeError('Invalid passcode')
+        setPasscode('')
+      }
     }
-  }
+  }, [passcode])
 
   if (!isAuthorized) {
     return (
-      <div className="dashboard-layout" style={{ justifyContent: 'center', minHeight: '80dvh' }}>
+      <div className="dashboard-layout" style={{ justifyContent: 'center', minHeight: '80dvh', alignItems: 'center' }}>
         <div style={{
           background: 'var(--color-bg)',
-          border: '1px solid var(--color-border)',
-          borderRadius: 'var(--radius-lg)',
-          padding: 32,
+          borderRadius: 20,
+          padding: '40px 24px',
           textAlign: 'center',
-          maxWidth: 360,
+          maxWidth: 320,
           width: '100%',
-          margin: '0 auto',
           display: 'flex',
           flexDirection: 'column',
-          gap: 24,
-          boxShadow: '0 8px 24px rgba(0,0,0,0.05)'
+          gap: 32
         }}>
           <div>
-            <h1 style={{ fontSize: 22, fontWeight: 800, letterSpacing: '-0.03em', marginBottom: 8 }}>Enter Passcode</h1>
-            <p style={{ fontSize: 13, color: 'var(--color-text-secondary)' }}>Settings is protected. Please enter the 4-digit passcode.</p>
+            <h1 style={{ fontSize: 24, fontWeight: 800, letterSpacing: '-0.03em', marginBottom: 8 }}>Passcode</h1>
+            <p style={{ fontSize: 13, color: 'var(--color-text-secondary)', lineHeight: 1.4 }}>Settings is locked. Enter the 4-digit passcode.</p>
           </div>
 
-          <form onSubmit={handlePasscodeSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8, alignItems: 'center' }}>
             <input
               type="password"
               inputMode="numeric"
@@ -152,32 +151,37 @@ export default function SettingsPage() {
               placeholder="••••"
               style={{
                 textAlign: 'center',
-                fontSize: 24,
-                letterSpacing: 12,
-                padding: 12,
-                borderRadius: 'var(--radius-md)',
-                border: '1px solid var(--color-border)'
+                fontSize: 32,
+                letterSpacing: 16,
+                padding: '8px 0',
+                width: '150px',
+                border: 'none',
+                borderBottom: '2px solid var(--color-border)',
+                background: 'transparent',
+                borderRadius: 0,
+                outline: 'none',
+                transition: 'border-color 0.2s',
+                fontFamily: 'monospace'
               }}
+              onFocus={(e) => e.target.style.borderBottomColor = 'var(--color-text)'}
+              onBlur={(e) => e.target.style.borderBottomColor = 'var(--color-border)'}
               autoFocus
             />
             {passcodeError && (
-              <span style={{ fontSize: 12, color: 'var(--color-danger)', fontWeight: 600 }}>{passcodeError}</span>
+              <span style={{ fontSize: 12, color: 'var(--color-danger)', fontWeight: 600, marginTop: 12 }}>{passcodeError}</span>
             )}
-            <button type="submit" className="primary" style={{ width: '100%', padding: 12, fontWeight: 700 }}>
-              Unlock Settings
-            </button>
-          </form>
+          </div>
 
           <button 
             onClick={() => navigate('/')} 
             style={{ 
               width: '100%', 
-              padding: 12, 
+              padding: '12px', 
               fontSize: 13, 
-              border: 'none', 
+              border: '1px solid var(--color-border)', 
               background: 'transparent', 
-              color: 'var(--color-text-secondary)',
-              textDecoration: 'underline'
+              borderRadius: 'var(--radius-md)',
+              fontWeight: 600
             }}
           >
             Cancel
