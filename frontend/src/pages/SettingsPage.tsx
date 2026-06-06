@@ -111,8 +111,15 @@ export default function SettingsPage() {
   return (
     <div className="dashboard-layout">
       {/* Top Bar */}
-      <div style={{ marginBottom: 32 }}>
-        <h1 style={{ fontSize: 22, fontWeight: 700, letterSpacing: '-0.02em' }}>Settings</h1>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 32 }}>
+        <button 
+          onClick={() => navigate(-1)} 
+          style={{ border: '1px solid var(--color-border)', background: 'var(--color-bg)', padding: '8px 14px', fontSize: 13, borderRadius: 'var(--radius-md)', display: 'inline-flex', alignItems: 'center' }}
+        >
+          <ArrowLeftIcon />
+          <span>Back</span>
+        </button>
+        <h1 style={{ fontSize: 28, fontWeight: 800, letterSpacing: '-0.03em', color: 'var(--color-text)' }}>Settings</h1>
       </div>
 
       {/* Toast notification */}
@@ -176,10 +183,10 @@ export default function SettingsPage() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
           <h2 style={{ fontSize: 11, fontWeight: 700, color: 'var(--color-text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Preset push times</h2>
           <div style={{ background: 'var(--color-bg)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-lg)', padding: 18 }}>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
               {(['morning', 'afternoon', 'evening', 'night'] as const).map(slot => (
-                <div key={slot}>
-                  <label style={{ fontSize: 12, color: 'var(--color-text-secondary)', display: 'block', marginBottom: 6, textTransform: 'capitalize', fontWeight: 600 }}>{slot}</label>
+                <div key={slot} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <label style={{ fontSize: 13, color: 'var(--color-text-secondary)', textTransform: 'capitalize', fontWeight: 600 }}>{slot}</label>
                   <input 
                     type="time" 
                     value={settings.presets[slot]} 
@@ -194,9 +201,11 @@ export default function SettingsPage() {
                       border: '1px solid var(--color-border)', 
                       borderRadius: 'var(--radius-md)', 
                       background: 'var(--color-bg)',
-                      padding: '6px 8px',
+                      padding: '4px 8px',
                       fontSize: '13px',
-                      height: '34px'
+                      height: '32px',
+                      width: '100px',
+                      flexShrink: 0
                     }}
                   />
                 </div>
@@ -331,27 +340,6 @@ export default function SettingsPage() {
           }}
         >
           Save All Settings
-        </button>
-
-        {/* Back Button */}
-        <button 
-          onClick={() => navigate(-1)} 
-          style={{ 
-            width: '100%', 
-            padding: 14, 
-            fontSize: 14, 
-            fontWeight: 600,
-            borderRadius: 'var(--radius-lg)', 
-            marginTop: 12,
-            border: '1px solid var(--color-border)',
-            background: 'transparent',
-            display: 'inline-flex',
-            alignItems: 'center',
-            justifyContent: 'center'
-          }}
-        >
-          <ArrowLeftIcon />
-          Go Back
         </button>
       </div>
     </div>

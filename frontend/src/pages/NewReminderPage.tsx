@@ -104,8 +104,15 @@ export default function NewReminderPage({ onSaved }: Props) {
   return (
     <div className="dashboard-layout">
       {/* Header */}
-      <div style={{ marginBottom: 32 }}>
-        <h1 style={{ fontSize: 22, fontWeight: 700, letterSpacing: '-0.02em' }}>New Reminder</h1>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 32 }}>
+        <button 
+          onClick={() => navigate(-1)} 
+          style={{ border: '1px solid var(--color-border)', background: 'var(--color-bg)', padding: '8px 14px', fontSize: 13, borderRadius: 'var(--radius-md)', display: 'inline-flex', alignItems: 'center' }}
+        >
+          <ArrowLeftIcon />
+          <span>Back</span>
+        </button>
+        <h1 style={{ fontSize: 28, fontWeight: 800, letterSpacing: '-0.03em', color: 'var(--color-text)' }}>New Reminder</h1>
       </div>
 
       {/* Form Container */}
@@ -225,27 +232,6 @@ export default function NewReminderPage({ onSaved }: Props) {
         }}
       >
         Save Reminder
-      </button>
-
-      {/* Back Button */}
-      <button 
-        onClick={() => navigate(-1)} 
-        style={{ 
-          width: '100%', 
-          padding: 14, 
-          fontSize: 14, 
-          fontWeight: 600,
-          borderRadius: 'var(--radius-lg)', 
-          marginTop: 12,
-          border: '1px solid var(--color-border)',
-          background: 'transparent',
-          display: 'inline-flex',
-          alignItems: 'center',
-          justifyContent: 'center'
-        }}
-      >
-        <ArrowLeftIcon />
-        Go Back
       </button>
     </div>
   )
