@@ -12,6 +12,19 @@ interface Props {
 
 type Screen = 'main' | 'snooze' | 'push-day' | 'push-today' | 'push-tomorrow'
 
+export const ArrowLeftIcon = () => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: 6 }}>
+    <line x1="19" y1="12" x2="5" y2="12"></line>
+    <polyline points="12 19 5 12 12 5"></polyline>
+  </svg>
+)
+
+export const CheckIcon = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: 6 }}>
+    <polyline points="20 6 9 17 4 12"></polyline>
+  </svg>
+)
+
 export default function PingOverlay({ reminder, onResolved }: Props) {
   const [screen, setScreen] = useState<Screen>('main')
   const [snoozeInput, setSnoozeInput] = useState('')
@@ -114,10 +127,14 @@ export default function PingOverlay({ reminder, onResolved }: Props) {
                 borderRadius: 'var(--radius-md)', 
                 fontWeight: 700,
                 fontSize: 16,
-                width: '100%'
+                width: '100%',
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center'
               }}
             >
-              ✓ Done
+              <CheckIcon />
+              Done
             </button>
             <button 
               onClick={() => setScreen('snooze')} 
@@ -194,10 +211,13 @@ export default function PingOverlay({ reminder, onResolved }: Props) {
                 background: 'none',
                 alignSelf: 'center',
                 fontSize: 13,
-                fontWeight: 600
+                fontWeight: 600,
+                display: 'inline-flex',
+                alignItems: 'center'
               }}
             >
-              ← Back
+              <ArrowLeftIcon />
+              Back
             </button>
           </div>
         )}
@@ -227,10 +247,13 @@ export default function PingOverlay({ reminder, onResolved }: Props) {
                 background: 'none',
                 alignSelf: 'center',
                 fontSize: 13,
-                fontWeight: 600
+                fontWeight: 600,
+                display: 'inline-flex',
+                alignItems: 'center'
               }}
             >
-              ← Back
+              <ArrowLeftIcon />
+              Back
             </button>
           </div>
         )}
@@ -277,10 +300,13 @@ export default function PingOverlay({ reminder, onResolved }: Props) {
                 background: 'none',
                 alignSelf: 'center',
                 fontSize: 13,
-                fontWeight: 600
+                fontWeight: 600,
+                display: 'inline-flex',
+                alignItems: 'center'
               }}
             >
-              ← Back
+              <ArrowLeftIcon />
+              Back
             </button>
           </div>
         )}
@@ -328,10 +354,13 @@ export default function PingOverlay({ reminder, onResolved }: Props) {
                   background: 'none',
                   alignSelf: 'center',
                   fontSize: 13,
-                  fontWeight: 600
+                  fontWeight: 600,
+                  display: 'inline-flex',
+                  alignItems: 'center'
                 }}
               >
-                ← Back
+                <ArrowLeftIcon />
+                Back
               </button>
             )}
           </div>

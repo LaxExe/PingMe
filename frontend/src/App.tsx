@@ -1,6 +1,9 @@
 import { useEffect, useState } from 'react'
+
+// If type declarations for 'react-router-dom' are not installed in the environment,
+// provide a minimal module declaration to avoid TS "Cannot find module" errors.
 declare module 'react-router-dom'
-import { BrowserRouter, Routes, Route, Link, useLocation } from 'react-router-dom'
+import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import { seedDefaults, getAllReminders, updateReminder } from './db'
 import { rescheduleAll, setOnPing } from './scheduler'
 import { syncFromWorker } from './services/workerApi'
@@ -9,69 +12,7 @@ import HomePage from './pages/HomePage'
 import NewReminderPage from './pages/NewReminderPage'
 import SettingsPage from './pages/SettingsPage'
 import PingOverlay from './components/PingOverlay'
-
-function AppLayout({ children }: { children: React.ReactNode }) {
-  const location = useLocation()
-  const currentPath = location.pathname
-
-  return (
-    <div className="app-container">
-      {/* Desktop Sidebar */}
-      <div className="desktop-sidebar">
-        <div>
-          <h1 style={{ fontSize: 24, fontWeight: 800, letterSpacing: '-0.03em', color: 'var(--color-text)', marginBottom: 28 }}>
-            PingMe
-          </h1>
-          <nav style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-            <Link to="/" className={`sidebar-link ${currentPath === '/' ? 'active' : ''}`}>
-              <span style={{ fontSize: 18 }}>🔔</span>
-              <span>Reminders</span>
-            </Link>
-            <Link to="/new" className={`sidebar-link ${currentPath === '/new' ? 'active' : ''}`}>
-              <span style={{ fontSize: 18 }}>＋</span>
-              <span>New Reminder</span>
-            </Link>
-            <Link to="/settings" className={`sidebar-link ${currentPath === '/settings' ? 'active' : ''}`}>
-              <span style={{ fontSize: 18 }}>⚙️</span>
-              <span>Settings</span>
-            </Link>
-          </nav>
-        </div>
-
-        <div style={{ marginTop: 'auto', display: 'flex', flexDirection: 'column', gap: 6 }}>
-          <div style={{ fontSize: 11, color: 'var(--color-text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-            System Status
-          </div>
-          <div style={{ fontSize: 13, color: 'var(--color-text-secondary)', display: 'flex', alignItems: 'center', gap: 6 }}>
-            <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--color-text)', display: 'inline-block' }}></span>
-            Active and Syncing
-          </div>
-        </div>
-      </div>
-
-      {/* Main Content Area */}
-      <div className="dashboard-layout">
-        {children}
-      </div>
-
-      {/* Mobile Tab Bar */}
-      <div className="mobile-tab-bar">
-        <Link to="/" className={`tab-item ${currentPath === '/' ? 'active' : ''}`}>
-          <span className="tab-icon">🔔</span>
-          <span>Reminders</span>
-        </Link>
-        <Link to="/new" className={`tab-item ${currentPath === '/new' ? 'active' : ''}`}>
-          <span className="tab-icon">＋</span>
-          <span>New</span>
-        </Link>
-        <Link to="/settings" className={`tab-item ${currentPath === '/settings' ? 'active' : ''}`}>
-          <span className="tab-icon">⚙️</span>
-          <span>Settings</span>
-        </Link>
-      </div>
-    </div>
-  )
-}
+import AppLayout from './components/AppLayout'
 
 export default function App() {
   const [activePing, setActivePing] = useState<Reminder | null>(null)

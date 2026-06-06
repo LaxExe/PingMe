@@ -10,6 +10,61 @@ interface Props {
   refreshKey: number
 }
 
+// Minimalistic Monochrome SVGs
+export const SettingsIcon = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="12" cy="12" r="3"></circle>
+    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+  </svg>
+)
+
+export const PlusIcon = () => (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+    <line x1="12" y1="5" x2="12" y2="19"></line>
+    <line x1="5" y1="12" x2="19" y2="12"></line>
+  </svg>
+)
+
+export const TrashIcon = () => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: 6 }}>
+    <polyline points="3 6 5 6 21 6"></polyline>
+    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+    <line x1="10" y1="11" x2="10" y2="17"></line>
+    <line x1="14" y1="11" x2="14" y2="17"></line>
+  </svg>
+)
+
+export const BellIcon = () => (
+  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: 4, flexShrink: 0 }}>
+    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+    <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+  </svg>
+)
+
+export const RepeatIcon = () => (
+  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: 4, flexShrink: 0 }}>
+    <polyline points="17 1 21 5 17 9"></polyline>
+    <path d="M3 11V9a4 4 0 0 1 4-4h14"></path>
+    <polyline points="7 23 3 19 7 15"></polyline>
+    <path d="M21 13v2a4 4 0 0 1-4 4H3"></path>
+  </svg>
+)
+
+export const AlertIcon = () => (
+  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: 6, flexShrink: 0 }}>
+    <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+    <line x1="12" y1="9" x2="12" y2="13"></line>
+    <line x1="12" y1="17" x2="12.01" y2="17"></line>
+  </svg>
+)
+
+export const LockIcon = () => (
+  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: 6, flexShrink: 0 }}>
+    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+    <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+  </svg>
+)
+
 export default function HomePage({ refreshKey }: Props) {
   const navigate = useNavigate()
   const [reminders, setReminders] = useState<Reminder[]>([])
@@ -147,20 +202,23 @@ export default function HomePage({ refreshKey }: Props) {
   }
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
-      {/* Page Header */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingBottom: 8 }}>
-        <div>
-          <h1 style={{ fontSize: 24, fontWeight: 800, letterSpacing: '-0.03em', color: 'var(--color-text)' }}>Reminders</h1>
-          <p style={{ fontSize: 13, color: 'var(--color-text-secondary)', marginTop: 2 }}>Manage your active notification schedules</p>
-        </div>
+    <div className="dashboard-layout">
+      
+      {/* Top Bar - Mobile only header */}
+      <div className="mobile-only" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
+        <h1 style={{ fontSize: 24, fontWeight: 800, letterSpacing: '-0.03em', color: 'var(--color-text)' }}>PingMe</h1>
         <button 
-          className="primary desktop-only" 
-          onClick={() => navigate('/new')}
-          style={{ padding: '8px 16px', fontSize: 13 }}
+          onClick={() => navigate('/settings')}
+          style={{ border: '1px solid var(--color-border)', background: 'var(--color-bg)', width: 40, height: 40, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
         >
-          ＋ Add Reminder
+          <SettingsIcon />
         </button>
+      </div>
+
+      {/* Desktop Header */}
+      <div className="desktop-only" style={{ marginBottom: 32 }}>
+        <h1 style={{ fontSize: 28, fontWeight: 800, letterSpacing: '-0.03em', color: 'var(--color-text)' }}>Reminders</h1>
+        <p style={{ fontSize: 13, color: 'var(--color-text-secondary)', marginTop: 4 }}>Manage and track your active reminder triggers.</p>
       </div>
 
       {/* Main Categories and Reminders */}
@@ -200,7 +258,7 @@ export default function HomePage({ refreshKey }: Props) {
                   </span>
                 </div>
                 {!cat.isPersistent && (
-                  <span style={{ fontSize: 10, color: 'var(--color-text-secondary)' }}>
+                  <span style={{ fontSize: 10, color: 'var(--color-text-secondary)', width: 14, textAlign: 'center' }}>
                     {isCollapsed ? '▼' : '▲'}
                   </span>
                 )}
@@ -273,14 +331,16 @@ export default function HomePage({ refreshKey }: Props) {
                             
                             <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 10, marginTop: 4 }}>
                               {/* Next Ping Time */}
-                              <span style={{ fontSize: 12, color: 'var(--color-text-secondary)', display: 'inline-flex', alignItems: 'center', gap: 4 }}>
-                                <span>🔔</span> {formatDateTime(reminder.nextPingAt)}
+                              <span style={{ fontSize: 12, color: 'var(--color-text-secondary)', display: 'inline-flex', alignItems: 'center' }}>
+                                <BellIcon />
+                                {formatDateTime(reminder.nextPingAt)}
                               </span>
 
                               {/* Recurrence Badge */}
                               {reminder.recurrence !== 'none' && (
-                                <span style={{ fontSize: 11, background: 'var(--color-bg-secondary)', border: '1px solid var(--color-border)', color: 'var(--color-text)', padding: '2px 8px', borderRadius: 'var(--radius-sm)', fontWeight: 600 }}>
-                                  🔄 {formatRecurrence(reminder.recurrence)}
+                                <span style={{ fontSize: 11, background: 'var(--color-bg-secondary)', border: '1px solid var(--color-border)', color: 'var(--color-text)', padding: '2px 8px', borderRadius: 'var(--radius-sm)', fontWeight: 600, display: 'inline-flex', alignItems: 'center' }}>
+                                  <RepeatIcon />
+                                  {formatRecurrence(reminder.recurrence)}
                                 </span>
                               )}
 
@@ -299,10 +359,13 @@ export default function HomePage({ refreshKey }: Props) {
                                     borderRadius: 'var(--radius-sm)', 
                                     fontWeight: 700,
                                     cursor: 'pointer',
-                                    border: '1px solid var(--color-danger)'
+                                    border: '1px solid var(--color-danger)',
+                                    display: 'inline-flex',
+                                    alignItems: 'center'
                                   }}
                                 >
-                                  ⚠️ Tap to reschedule calls
+                                  <AlertIcon />
+                                  Tap to reschedule calls
                                 </span>
                               )}
                             </div>
@@ -324,7 +387,8 @@ export default function HomePage({ refreshKey }: Props) {
                                 zIndex: 3
                               }}
                             >
-                              🗑️ Delete
+                              <TrashIcon />
+                              Delete
                             </button>
                           </div>
                         </div>
@@ -337,6 +401,31 @@ export default function HomePage({ refreshKey }: Props) {
           )
         })}
       </div>
+
+      {/* Floating Action Button - Mobile only */}
+      <button
+        onClick={() => navigate('/new')}
+        className="mobile-only"
+        style={{
+          position: 'fixed',
+          bottom: 24,
+          right: 24,
+          borderRadius: '50%',
+          width: 56,
+          height: 56,
+          background: 'var(--color-text)',
+          color: 'var(--color-bg)',
+          border: 'none',
+          boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 10,
+          cursor: 'pointer'
+        }}
+      >
+        <PlusIcon />
+      </button>
 
       {/* Rescheduling Modal Overlay */}
       {reschedulingReminder && presets && (
