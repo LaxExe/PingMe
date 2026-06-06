@@ -1,18 +1,13 @@
 import { useEffect, useState } from 'react'
-
-// If type declarations for 'react-router-dom' are not installed in the environment,
-// provide a minimal module declaration to avoid TS "Cannot find module" errors.
-declare module 'react-router-dom'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
-import { seedDefaults, getAllReminders, updateReminder, getDB, triggerPushSync } from './db'
+import { seedDefaults, getAllReminders, updateReminder } from './db'
 import { rescheduleAll, setOnPing } from './scheduler'
-import { syncFromWorker, pullDbFromWorker } from './services/workerApi'
+import { syncFromWorker } from './services/workerApi'
 import { Reminder } from './types'
 import HomePage from './pages/HomePage'
 import NewReminderPage from './pages/NewReminderPage'
 import SettingsPage from './pages/SettingsPage'
 import PingOverlay from './components/PingOverlay'
-import AppLayout from './components/AppLayout'
 
 export default function App() {
   const [activePing, setActivePing] = useState<Reminder | null>(null)
@@ -20,32 +15,7 @@ export default function App() {
 
   useEffect(() => {
     async function init() {
-      try {
-        const remoteDb = await pullDbFromWorker()
-        if (remoteDb && remoteDb.reminders) {
-          const db = await getDB()
-          // Overwrite reminders
-          await db.clear('reminders')
-          for (const r of remoteDb.reminders) {
-            await db.put('reminders', r)
-          }
-          // Overwrite categories
-          await db.clear('categories')
-          for (const c of remoteDb.categories) {
-            await db.put('categories', c)
-          }
-          // Overwrite settings
-          await db.clear('settings')
-          await db.put('settings', { ...remoteDb.settings, id: 'settings' } as never)
-        } else {
-          // If no remote DB exists, seed defaults and push them to the worker
-          await seedDefaults()
-          await triggerPushSync()
-        }
-      } catch (err) {
-        // Fallback to local IndexedDB on network failure
-        await seedDefaults()
-      }
+      await seedDefaults()
       await doSync()
       setOnPing((reminder) => setActivePing(reminder))
       await rescheduleAll()
@@ -92,13 +62,11 @@ export default function App() {
       {activePing && (
         <PingOverlay reminder={activePing} onResolved={handlePingResolved} />
       )}
-      <AppLayout>
-        <Routes>
-          <Route path="/" element={<HomePage refreshKey={refreshKey} />} />
-          <Route path="/new" element={<NewReminderPage onSaved={() => { setRefreshKey(k => k + 1); rescheduleAll() }} />} />
-          <Route path="/settings" element={<SettingsPage />} />
-        </Routes>
-      </AppLayout>
+      <Routes>
+        <Route path="/" element={<HomePage refreshKey={refreshKey} />} />
+        <Route path="/new" element={<NewReminderPage onSaved={() => { setRefreshKey(k => k + 1); rescheduleAll() }} />} />
+        <Route path="/settings" element={<SettingsPage />} />
+      </Routes>
     </BrowserRouter>
   )
 }
