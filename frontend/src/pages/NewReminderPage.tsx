@@ -67,7 +67,7 @@ export default function NewReminderPage({ onSaved }: Props) {
     const ts = new Date(scheduledAt).getTime()
     const settings = await getSettings()
 
-    // Determine final recurrence rule
+    // Determine final recurrence ruleasdf
     let finalRecurrence: RecurrenceRule = 'none'
     if (recurrenceType === 'daily') finalRecurrence = 'daily'
     else if (recurrenceType === 'weekly') finalRecurrence = 'weekly'
