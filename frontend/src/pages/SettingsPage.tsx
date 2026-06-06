@@ -111,14 +111,7 @@ export default function SettingsPage() {
   return (
     <div className="dashboard-layout">
       {/* Top Bar */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 32 }}>
-        <button 
-          onClick={() => navigate(-1)} 
-          style={{ border: '1px solid var(--color-border)', background: 'var(--color-bg)', padding: '8px 14px', fontSize: 13, borderRadius: 'var(--radius-md)', display: 'inline-flex', alignItems: 'center' }}
-        >
-          <ArrowLeftIcon />
-          <span>Back</span>
-        </button>
+      <div style={{ marginBottom: 32 }}>
         <h1 style={{ fontSize: 22, fontWeight: 700, letterSpacing: '-0.02em' }}>Settings</h1>
       </div>
 
@@ -183,7 +176,7 @@ export default function SettingsPage() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
           <h2 style={{ fontSize: 11, fontWeight: 700, color: 'var(--color-text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Preset push times</h2>
           <div style={{ background: 'var(--color-bg)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-lg)', padding: 18 }}>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
               {(['morning', 'afternoon', 'evening', 'night'] as const).map(slot => (
                 <div key={slot}>
                   <label style={{ fontSize: 12, color: 'var(--color-text-secondary)', display: 'block', marginBottom: 6, textTransform: 'capitalize', fontWeight: 600 }}>{slot}</label>
@@ -197,7 +190,14 @@ export default function SettingsPage() {
                         [slot]: e.target.value
                       }
                     })} 
-                    style={{ border: '1px solid var(--color-border)', borderRadius: 'var(--radius-md)', background: 'var(--color-bg)' }}
+                    style={{ 
+                      border: '1px solid var(--color-border)', 
+                      borderRadius: 'var(--radius-md)', 
+                      background: 'var(--color-bg)',
+                      padding: '6px 8px',
+                      fontSize: '13px',
+                      height: '34px'
+                    }}
                   />
                 </div>
               ))}
@@ -331,6 +331,27 @@ export default function SettingsPage() {
           }}
         >
           Save All Settings
+        </button>
+
+        {/* Back Button */}
+        <button 
+          onClick={() => navigate(-1)} 
+          style={{ 
+            width: '100%', 
+            padding: 14, 
+            fontSize: 14, 
+            fontWeight: 600,
+            borderRadius: 'var(--radius-lg)', 
+            marginTop: 12,
+            border: '1px solid var(--color-border)',
+            background: 'transparent',
+            display: 'inline-flex',
+            alignItems: 'center',
+            justifyContent: 'center'
+          }}
+        >
+          <ArrowLeftIcon />
+          Go Back
         </button>
       </div>
     </div>
