@@ -74,16 +74,11 @@ export default function SettingsPage() {
   }
 
   return (
-    <div style={{ padding: '24px 16px 80px 16px', maxWidth: 580, margin: '0 auto', display: 'flex', flexDirection: 'column', gap: 28, animation: 'fadeIn 0.3s ease-out' }}>
-      {/* Top Bar */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-        <button 
-          onClick={() => navigate(-1)} 
-          style={{ border: '1px solid var(--color-border)', background: 'var(--color-bg)', padding: '6px 12px', fontSize: 13, borderRadius: 'var(--radius-md)' }}
-        >
-          ← Back
-        </button>
-        <h1 style={{ fontSize: 20, fontWeight: 700, letterSpacing: '-0.02em' }}>Settings</h1>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 24, width: '100%', animation: 'fadeIn 0.3s ease-out' }}>
+      {/* Page Header */}
+      <div>
+        <h1 style={{ fontSize: 24, fontWeight: 800, letterSpacing: '-0.03em', color: 'var(--color-text)' }}>Settings</h1>
+        <p style={{ fontSize: 13, color: 'var(--color-text-secondary)', marginTop: 2 }}>Configure your profile, calling limits, and filters</p>
       </div>
 
       {/* Toast notification */}
@@ -146,7 +141,7 @@ export default function SettingsPage() {
       <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
         <h2 style={{ fontSize: 11, fontWeight: 700, color: 'var(--color-text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Preset push times</h2>
         <div style={{ background: 'var(--color-bg)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-lg)', padding: 18 }}>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(110px, 1fr))', gap: 14 }}>
             {(['morning', 'afternoon', 'evening', 'night'] as const).map(slot => (
               <div key={slot}>
                 <label style={{ fontSize: 12, color: 'var(--color-text-secondary)', display: 'block', marginBottom: 6, textTransform: 'capitalize', fontWeight: 600 }}>{slot}</label>
@@ -172,7 +167,7 @@ export default function SettingsPage() {
       <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
         <h2 style={{ fontSize: 11, fontWeight: 700, color: 'var(--color-text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Call settings</h2>
         <div style={{ background: 'var(--color-bg)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-lg)', padding: 18, display: 'flex', flexDirection: 'column', gap: 10 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
             <span style={{ fontSize: 14, fontWeight: 600 }}>Re-ping interval:</span>
             <input 
               type="number" 
@@ -203,26 +198,30 @@ export default function SettingsPage() {
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'space-between',
+                    flexWrap: 'wrap',
+                    gap: 12,
                     padding: '14px 18px',
                     borderBottom: '1px solid var(--color-border)'
                   }}
                 >
                   {isEditing ? (
-                    <div style={{ display: 'flex', gap: 8, width: '100%' }}>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, width: '100%' }}>
                       <input 
                         value={editingCategoryName} 
                         onChange={e => setEditingCategoryName(e.target.value)}
                         onKeyDown={e => e.key === 'Enter' && saveCategoryRename()}
                         autoFocus
-                        style={{ padding: '6px 10px', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-md)', background: 'var(--color-bg)' }}
+                        style={{ padding: '6px 10px', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-md)', background: 'var(--color-bg)', flex: '1 1 200px' }}
                       />
-                      <button className="primary" onClick={saveCategoryRename} style={{ padding: '6px 12px' }}>Save</button>
-                      <button onClick={() => setEditingCategoryId(null)} style={{ padding: '6px 12px', border: '1px solid var(--color-border)', background: 'var(--color-bg)' }}>Cancel</button>
+                      <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
+                        <button className="primary" onClick={saveCategoryRename} style={{ padding: '6px 12px' }}>Save</button>
+                        <button onClick={() => setEditingCategoryId(null)} style={{ padding: '6px 12px', border: '1px solid var(--color-border)', background: 'var(--color-bg)' }}>Cancel</button>
+                      </div>
                     </div>
                   ) : (
                     <>
                       <span style={{ fontSize: 14, fontWeight: 600 }}>{cat.name}</span>
-                      <div style={{ display: 'flex', gap: 8 }}>
+                      <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
                         <button onClick={() => startEditing(cat)} style={{ padding: '6px 10px', fontSize: 12, border: '1px solid var(--color-border)', background: 'var(--color-bg)' }}>✏️ Rename</button>
                         <button className="danger" onClick={() => handleDeleteCategory(cat.id)} style={{ padding: '6px 10px', fontSize: 12 }}>🗑️ Delete</button>
                       </div>
@@ -257,12 +256,12 @@ export default function SettingsPage() {
             })}
 
             {/* Add Category Row */}
-            <form onSubmit={handleAddCategory} style={{ display: 'flex', gap: 8, padding: 18 }}>
+            <form onSubmit={handleAddCategory} style={{ display: 'flex', gap: 8, padding: 18, flexWrap: 'wrap' }}>
               <input 
                 value={newCategoryName} 
                 onChange={e => setNewCategoryName(e.target.value)} 
                 placeholder="New category name"
-                style={{ flex: 1, border: '1px solid var(--color-border)', borderRadius: 'var(--radius-md)', background: 'var(--color-bg)' }}
+                style={{ flex: '1 1 200px', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-md)', background: 'var(--color-bg)' }}
               />
               <button type="submit" className="primary" style={{ flexShrink: 0 }}>
                 ＋ Add
