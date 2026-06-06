@@ -161,7 +161,7 @@ export async function deleteCategory(id: string): Promise<void> {
   const db = await getDB()
   // move reminders in this category to inbox
   const all = await db.getAll('reminders')
-  const tx = db.transaction('reminders', 'readwrite')
+  const tx = db.transaction('reminders', 'readwrite') 
   for (const r of all) {
     if (r.categoryId === id) {
       await tx.store.put({ ...r, categoryId: 'inbox' })
