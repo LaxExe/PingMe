@@ -1,0 +1,23 @@
+name = "pingme-worker"
+main = "src/index.ts"
+compatibility_date = "2024-07-25"
+compatibility_flags = ["nodejs_compat"]
+account_id = "6518f39001275436d1e3d7cf3dd108c3"
+
+[[kv_namespaces]]
+binding = "PINGME_SETTINGS"
+id = "53c638ec675b490f865dc0b0300b56c6"
+
+[[durable_objects.bindings]]
+name = "REMINDER_SCHEDULER"
+class_name = "ReminderScheduler"
+
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["ReminderScheduler"]
+
+# Secrets — set these via: npx wrangler secret put SECRET_NAME
+# TWILIO_ACCOUNT_SID
+# TWILIO_AUTH_TOKEN
+# TWILIO_PHONE_NUMBER
+# PINGME_SECRET

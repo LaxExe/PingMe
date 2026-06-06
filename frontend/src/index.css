@@ -1,0 +1,99 @@
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  --color-bg: #ffffff;
+  --color-bg-secondary: #f7f7f5;
+  --color-bg-tertiary: #f0eeea;
+  --color-text: #1a1a18;
+  --color-text-secondary: #6b6b67;
+  --color-text-tertiary: #9b9b97;
+  --color-border: rgba(0,0,0,0.10);
+  --color-border-strong: rgba(0,0,0,0.20);
+  --color-accent: #3C3489;
+  --color-accent-bg: #EEEDFE;
+  --color-success: #0F6E56;
+  --color-success-bg: #E1F5EE;
+  --color-warning: #633806;
+  --color-warning-bg: #FAEEDA;
+  --color-danger: #712B13;
+  --color-danger-bg: #FAECE7;
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-size: 16px;
+  line-height: 1.5;
+  color: var(--color-text);
+  background: var(--color-bg);
+  -webkit-font-smoothing: antialiased;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-bg: #1a1a18;
+    --color-bg-secondary: #242422;
+    --color-bg-tertiary: #2c2c2a;
+    --color-text: #f0eeea;
+    --color-text-secondary: #a0a09c;
+    --color-text-tertiary: #6b6b67;
+    --color-border: rgba(255,255,255,0.10);
+    --color-border-strong: rgba(255,255,255,0.20);
+    --color-accent: #AFA9EC;
+    --color-accent-bg: #26215C;
+    --color-success-bg: #04342C;
+    --color-warning-bg: #412402;
+    --color-danger-bg: #4A1B0C;
+  }
+}
+
+body {
+  min-height: 100dvh;
+  background: var(--color-bg);
+}
+
+#root {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+}
+
+button {
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 14px;
+  border: 0.5px solid var(--color-border-strong);
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--color-text);
+  padding: 8px 16px;
+  transition: background 0.1s, opacity 0.1s;
+}
+
+button:hover { background: var(--color-bg-secondary); }
+button:active { opacity: 0.7; }
+
+input, select, textarea {
+  font-family: inherit;
+  font-size: 14px;
+  color: var(--color-text);
+  background: var(--color-bg-secondary);
+  border: 0.5px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 10px 14px;
+  outline: none;
+  width: 100%;
+  transition: border-color 0.15s;
+}
+
+input:focus, select:focus, textarea:focus {
+  border-color: var(--color-accent);
+}
+
+a {
+  color: var(--color-accent);
+  text-decoration: none;
+}
