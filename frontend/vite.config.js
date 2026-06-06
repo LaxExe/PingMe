@@ -6,7 +6,7 @@ export default defineConfig({
         react(),
         VitePWA({
             registerType: 'autoUpdate',
-            includeAssets: ['favicon.ico', 'apple-touch-icon.png'],
+            includeAssets: ['favicon.ico', 'favicon.png'],
             manifest: {
                 name: 'PingMe',
                 short_name: 'PingMe',
@@ -19,17 +19,17 @@ export default defineConfig({
                 start_url: '/',
                 icons: [
                     {
-                        src: 'pwa-192x192.png',
+                        src: 'favicon.png',
                         sizes: '192x192',
                         type: 'image/png'
                     },
                     {
-                        src: 'pwa-512x512.png',
+                        src: 'favicon.png',
                         sizes: '512x512',
                         type: 'image/png'
                     },
                     {
-                        src: 'pwa-512x512.png',
+                        src: 'favicon.png',
                         sizes: '512x512',
                         type: 'image/png',
                         purpose: 'any maskable'
