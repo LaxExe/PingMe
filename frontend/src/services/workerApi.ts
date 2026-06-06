@@ -1,4 +1,4 @@
-import { Reminder, Settings, SyncResponse, SchedulePayload } from '../types'
+import { Reminder, Settings, SyncResponse, SchedulePayload, Category } from '../types'
 
 const WORKER_URL = import.meta.env.VITE_WORKER_URL as string
 const SECRET = import.meta.env.VITE_PINGME_SECRET as string
@@ -54,4 +54,31 @@ export async function pushSettingsToWorker(settings: Settings): Promise<void> {
     headers: headers(),
     body: JSON.stringify(settings)
   })
+}
+
+// ─── Push complete database to Worker KV ─────────────────────────────────────
+
+export async function pushDbToWorker(dbData: { reminders: Reminder[], categories: Category[], settings: Settings }): Promise<void> {
+  await fetch(`${WORKER_URL}/db`, {
+    method: 'POST',
+    headers: headers(),
+    body: JSON.stringify(dbData)
+  }).catch(() => {})
+}
+
+// ─── Pull complete database from Worker KV ───────────────────────────────────
+
+export async function pullDbFromWorker(): Promise<{ reminders: Reminder[], categories: Category[], settings: Settings } | null> {
+  try {
+    const res = await fetch(`${WORKER_URL}/db`, {
+      method: 'GET',
+      headers: headers()
+    })
+    if (!res.ok) return null
+    const data = await res.json()
+    if (!data || !data.reminders) return null
+    return data
+  } catch {
+    return null
+  }
 }

@@ -4,9 +4,9 @@ import { useEffect, useState } from 'react'
 // provide a minimal module declaration to avoid TS "Cannot find module" errors.
 declare module 'react-router-dom'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
-import { seedDefaults, getAllReminders, updateReminder } from './db'
+import { seedDefaults, getAllReminders, updateReminder, getDB, triggerPushSync } from './db'
 import { rescheduleAll, setOnPing } from './scheduler'
-import { syncFromWorker } from './services/workerApi'
+import { syncFromWorker, pullDbFromWorker } from './services/workerApi'
 import { Reminder } from './types'
 import HomePage from './pages/HomePage'
 import NewReminderPage from './pages/NewReminderPage'
@@ -20,7 +20,32 @@ export default function App() {
 
   useEffect(() => {
     async function init() {
-      await seedDefaults()
+      try {
+        const remoteDb = await pullDbFromWorker()
+        if (remoteDb && remoteDb.reminders) {
+          const db = await getDB()
+          // Overwrite reminders
+          await db.clear('reminders')
+          for (const r of remoteDb.reminders) {
+            await db.put('reminders', r)
+          }
+          // Overwrite categories
+          await db.clear('categories')
+          for (const c of remoteDb.categories) {
+            await db.put('categories', c)
+          }
+          // Overwrite settings
+          await db.clear('settings')
+          await db.put('settings', { ...remoteDb.settings, id: 'settings' } as never)
+        } else {
+          // If no remote DB exists, seed defaults and push them to the worker
+          await seedDefaults()
+          await triggerPushSync()
+        }
+      } catch (err) {
+        // Fallback to local IndexedDB on network failure
+        await seedDefaults()
+      }
       await doSync()
       setOnPing((reminder) => setActivePing(reminder))
       await rescheduleAll()

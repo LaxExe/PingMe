@@ -100,6 +100,93 @@ export default function SettingsPage() {
     setEditingCategoryId(null)
   }
 
+  const [passcode, setPasscode] = useState('')
+  const [passcodeError, setPasscodeError] = useState('')
+  const [isAuthorized, setIsAuthorized] = useState(() => {
+    return sessionStorage.getItem('settings_authorized') === 'true'
+  })
+
+  function handlePasscodeSubmit(e: React.FormEvent) {
+    e.preventDefault()
+    if (passcode === '2507') {
+      setIsAuthorized(true)
+      sessionStorage.setItem('settings_authorized', 'true')
+    } else {
+      setPasscodeError('Invalid passcode. Try again.')
+      setPasscode('')
+    }
+  }
+
+  if (!isAuthorized) {
+    return (
+      <div className="dashboard-layout" style={{ justifyContent: 'center', minHeight: '80dvh' }}>
+        <div style={{
+          background: 'var(--color-bg)',
+          border: '1px solid var(--color-border)',
+          borderRadius: 'var(--radius-lg)',
+          padding: 32,
+          textAlign: 'center',
+          maxWidth: 360,
+          width: '100%',
+          margin: '0 auto',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 24,
+          boxShadow: '0 8px 24px rgba(0,0,0,0.05)'
+        }}>
+          <div>
+            <h1 style={{ fontSize: 22, fontWeight: 800, letterSpacing: '-0.03em', marginBottom: 8 }}>Enter Passcode</h1>
+            <p style={{ fontSize: 13, color: 'var(--color-text-secondary)' }}>Settings is protected. Please enter the 4-digit passcode.</p>
+          </div>
+
+          <form onSubmit={handlePasscodeSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+            <input
+              type="password"
+              inputMode="numeric"
+              maxLength={4}
+              value={passcode}
+              onChange={e => {
+                setPasscode(e.target.value.replace(/\D/g, ''))
+                if (passcodeError) setPasscodeError('')
+              }}
+              placeholder="••••"
+              style={{
+                textAlign: 'center',
+                fontSize: 24,
+                letterSpacing: 12,
+                padding: 12,
+                borderRadius: 'var(--radius-md)',
+                border: '1px solid var(--color-border)'
+              }}
+              autoFocus
+            />
+            {passcodeError && (
+              <span style={{ fontSize: 12, color: 'var(--color-danger)', fontWeight: 600 }}>{passcodeError}</span>
+            )}
+            <button type="submit" className="primary" style={{ width: '100%', padding: 12, fontWeight: 700 }}>
+              Unlock Settings
+            </button>
+          </form>
+
+          <button 
+            onClick={() => navigate('/')} 
+            style={{ 
+              width: '100%', 
+              padding: 12, 
+              fontSize: 13, 
+              border: 'none', 
+              background: 'transparent', 
+              color: 'var(--color-text-secondary)',
+              textDecoration: 'underline'
+            }}
+          >
+            Cancel
+          </button>
+        </div>
+      </div>
+    )
+  }
+
   if (!settings) {
     return (
       <div style={{ padding: 24, display: 'flex', justifyContent: 'center', color: 'var(--color-text-secondary)', fontWeight: 600 }}>

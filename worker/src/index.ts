@@ -259,6 +259,21 @@ export default {
       });
     }
 
+    // Route: GET /db
+    if (url.pathname === "/db" && request.method === "GET") {
+      const db = await env.PINGME_SETTINGS.get("db_sync");
+      return new Response(db || "{}", {
+        headers: { "Content-Type": "application/json", ...corsHeaders }
+      });
+    }
+
+    // Route: POST /db
+    if (url.pathname === "/db" && request.method === "POST") {
+      const db = await request.text();
+      await env.PINGME_SETTINGS.put("db_sync", db);
+      return new Response("Saved", { headers: corsHeaders });
+    }
+
     // Route: POST /settings
     if (url.pathname === "/settings" && request.method === "POST") {
       const settings = await request.json();

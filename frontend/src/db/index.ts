@@ -100,19 +100,35 @@ export async function getReminder(id: string): Promise<Reminder | undefined> {
   return db.get('reminders', id)
 }
 
+import { pushDbToWorker } from '../services/workerApi'
+
+export async function triggerPushSync(): Promise<void> {
+  try {
+    const reminders = await getAllReminders()
+    const categories = await getAllCategories()
+    const settings = await getSettings()
+    await pushDbToWorker({ reminders, categories, settings })
+  } catch (e) {
+    // Silent fail if network or other error
+  }
+}
+
 export async function addReminder(reminder: Reminder): Promise<void> {
   const db = await getDB()
   await db.put('reminders', reminder)
+  await triggerPushSync()
 }
 
 export async function updateReminder(reminder: Reminder): Promise<void> {
   const db = await getDB()
   await db.put('reminders', reminder)
+  await triggerPushSync()
 }
 
 export async function deleteReminder(id: string): Promise<void> {
   const db = await getDB()
   await db.delete('reminders', id)
+  await triggerPushSync()
 }
 
 export async function getPendingReminders(): Promise<Reminder[]> {
@@ -132,11 +148,13 @@ export async function getAllCategories(): Promise<Category[]> {
 export async function addCategory(category: Category): Promise<void> {
   const db = await getDB()
   await db.put('categories', category)
+  await triggerPushSync()
 }
 
 export async function updateCategory(category: Category): Promise<void> {
   const db = await getDB()
   await db.put('categories', category)
+  await triggerPushSync()
 }
 
 export async function deleteCategory(id: string): Promise<void> {
@@ -151,6 +169,7 @@ export async function deleteCategory(id: string): Promise<void> {
   }
   await tx.done
   await db.delete('categories', id)
+  await triggerPushSync()
 }
 
 // ─── Settings ────────────────────────────────────────────────────────────────
@@ -175,4 +194,5 @@ export async function getSettings(): Promise<Settings> {
 export async function saveSettings(settings: Settings): Promise<void> {
   const db = await getDB()
   await db.put('settings', { ...settings, id: 'settings' } as never)
+  await triggerPushSync()
 }
