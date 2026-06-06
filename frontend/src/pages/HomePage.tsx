@@ -74,11 +74,15 @@ export default function HomePage({ refreshKey }: Props) {
   // Collapse state: key is categoryId, value is boolean (true if collapsed)
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>({})
   
-  // Swipe-to-delete state: tracks which reminder card is swiped open
+  // Swipe-to-delete state for mobile swipe gesture
   const [swipedReminderId, setSwipedReminderId] = useState<string | null>(null)
   const touchStartX = useRef<number>(0)
   const longPressTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   
+  // Drag and drop states
+  const [draggedReminderId, setDraggedReminderId] = useState<string | null>(null)
+  const [dragOverCategoryId, setDragOverCategoryId] = useState<string | null>(null)
+
   // Rescheduling modal state
   const [reschedulingReminder, setReschedulingReminder] = useState<Reminder | null>(null)
 
@@ -112,22 +116,48 @@ export default function HomePage({ refreshKey }: Props) {
     setSwipedReminderId(null)
   }
 
-  // --- Touch / Swipe & Long-Press Gestures ---
+  // --- Drag and Drop Handlers ---
+  const handleDragStart = (e: React.DragEvent, reminderId: string) => {
+    e.dataTransfer.setData('text/plain', reminderId)
+    setDraggedReminderId(reminderId)
+  }
+
+  const handleDrop = async (e: React.DragEvent, targetCategoryId: string) => {
+    e.preventDefault()
+    const reminderId = e.dataTransfer.getData('text/plain') || draggedReminderId
+    if (!reminderId) return
+
+    const reminder = reminders.find(r => r.id === reminderId)
+    if (reminder && reminder.categoryId !== targetCategoryId) {
+      const updated: Reminder = {
+        ...reminder,
+        categoryId: targetCategoryId,
+        isPersistent: targetCategoryId === 'persistent'
+      }
+      await updateReminder(updated)
+      await scheduleReminder(updated).catch(() => {})
+      await rescheduleAll()
+
+      const r = await getAllReminders()
+      setReminders(r)
+    }
+    setDraggedReminderId(null)
+  }
+
+  // --- Touch Swipe Gestures (Mobile only) ---
   const handleTouchStart = (e: React.TouchEvent, reminderId: string) => {
     touchStartX.current = e.touches[0].clientX
     
-    // Setup long press timer
     if (longPressTimer.current) clearTimeout(longPressTimer.current)
     longPressTimer.current = setTimeout(() => {
       setSwipedReminderId(reminderId)
-    }, 600) // 600ms hold triggers delete button reveal
+    }, 600)
   }
 
   const handleTouchMove = (e: React.TouchEvent) => {
     const touchMoveX = e.touches[0].clientX
     const diff = touchStartX.current - touchMoveX
     
-    // If user moves finger significantly, cancel long press
     if (Math.abs(diff) > 10) {
       if (longPressTimer.current) {
         clearTimeout(longPressTimer.current)
@@ -146,27 +176,11 @@ export default function HomePage({ refreshKey }: Props) {
     const diff = touchStartX.current - touchEndX
 
     if (diff > 50) {
-      // Swiped left
       setSwipedReminderId(reminderId)
     } else if (diff < -50) {
-      // Swiped right - close it
       if (swipedReminderId === reminderId) {
         setSwipedReminderId(null)
       }
-    }
-  }
-
-  const handleMouseDown = (e: React.MouseEvent, reminderId: string) => {
-    if (longPressTimer.current) clearTimeout(longPressTimer.current)
-    longPressTimer.current = setTimeout(() => {
-      setSwipedReminderId(reminderId)
-    }, 600)
-  }
-
-  const handleMouseUp = () => {
-    if (longPressTimer.current) {
-      clearTimeout(longPressTimer.current)
-      longPressTimer.current = null
     }
   }
 
@@ -186,7 +200,6 @@ export default function HomePage({ refreshKey }: Props) {
     await scheduleReminder(updated).catch(() => {})
     await rescheduleAll()
     
-    // Refresh local list
     const r = await getAllReminders()
     setReminders(r)
     setReschedulingReminder(null)
@@ -264,11 +277,27 @@ export default function HomePage({ refreshKey }: Props) {
                 )}
               </div>
 
-              {/* Reminders List */}
+              {/* Reminders List - Droppable Area */}
               {!isCollapsed && (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                <div 
+                  onDragEnter={(e) => { e.preventDefault(); setDragOverCategoryId(cat.id); }}
+                  onDragOver={(e) => e.preventDefault()}
+                  onDragLeave={() => setDragOverCategoryId(null)}
+                  onDrop={(e) => { handleDrop(e, cat.id); setDragOverCategoryId(null); }}
+                  style={{ 
+                    display: 'flex', 
+                    flexDirection: 'column', 
+                    gap: 10,
+                    padding: '8px',
+                    borderRadius: 'var(--radius-lg)',
+                    border: dragOverCategoryId === cat.id ? '1px dashed var(--color-text)' : '1px solid transparent',
+                    background: dragOverCategoryId === cat.id ? 'var(--color-bg-secondary)' : 'transparent',
+                    transition: 'all 0.2s ease',
+                    minHeight: 48
+                  }}
+                >
                   {catReminders.length === 0 ? (
-                    <div style={{ fontSize: 13, color: 'var(--color-text-tertiary)', fontStyle: 'italic', padding: '16px', background: 'var(--color-bg-secondary)', borderRadius: 'var(--radius-lg)', border: '1px dashed var(--color-border)', textAlign: 'center' }}>
+                    <div style={{ fontSize: 13, color: 'var(--color-text-tertiary)', fontStyle: 'italic', padding: '16px', background: 'var(--color-bg-secondary)', borderRadius: 'var(--radius-lg)', border: '1px dashed var(--color-border)', textAlign: 'center', width: '100%' }}>
                       No reminders in this list
                     </div>
                   ) : (
@@ -279,6 +308,9 @@ export default function HomePage({ refreshKey }: Props) {
                         <div 
                           key={reminder.id}
                           className="reminder-card-container"
+                          draggable={true}
+                          onDragStart={(e) => handleDragStart(e, reminder.id)}
+                          onDragEnd={() => setDraggedReminderId(null)}
                         >
                           {/* Underlay Delete Button - Swipe trigger on mobile */}
                           <div 
@@ -318,8 +350,6 @@ export default function HomePage({ refreshKey }: Props) {
                             onTouchStart={(e) => handleTouchStart(e, reminder.id)}
                             onTouchMove={handleTouchMove}
                             onTouchEnd={(e) => handleTouchEnd(e, reminder.id)}
-                            onMouseDown={(e) => handleMouseDown(e, reminder.id)}
-                            onMouseUp={handleMouseUp}
                             style={{
                               transform: isSwiped ? 'translateX(-80px)' : 'translateX(0px)',
                               cursor: 'grab'

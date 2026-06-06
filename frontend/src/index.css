@@ -182,7 +182,7 @@ a:hover {
   flex-direction: column;
   flex: 1;
   width: 100%;
-  max-width: 680px;
+  max-width: 580px;
   margin: 0 auto;
   padding: 16px 16px 80px 16px;
   animation: fadeIn 0.4s ease-out;
@@ -199,19 +199,19 @@ a:hover {
 
   .dashboard-layout {
     flex: 1;
-    max-width: 800px;
+    max-width: 680px;
     margin: 0;
-    padding: 32px 48px;
+    padding: 24px 36px;
   }
 
   .desktop-sidebar {
     display: flex;
     flex-direction: column;
-    width: 260px;
+    width: 220px;
     border-right: 1px solid var(--color-border);
     background: var(--color-bg);
-    padding: 32px 24px;
-    gap: 32px;
+    padding: 24px 18px;
+    gap: 24px;
     flex-shrink: 0;
     position: sticky;
     top: 0;
