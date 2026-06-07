@@ -166,7 +166,7 @@ export class ReminderScheduler {
       params.append("StatusCallback", `${workerUrl}/webhook?reminderId=${reminderId}`);
       params.append("StatusCallbackEvent", "completed");
 
-      await fetch(twilioUrl, {
+      const response = await fetch(twilioUrl, {
         method: "POST",
         headers: {
           "Authorization": `Basic ${basicAuth}`,
@@ -174,8 +174,14 @@ export class ReminderScheduler {
         },
         body: params.toString()
       });
+      if (!response.ok) {
+        const errText = await response.text();
+        console.error(`Twilio API returned error (status ${response.status}): ${errText}`);
+      } else {
+        console.log(`Successfully triggered Twilio call. Status: ${response.status}`);
+      }
     } catch (e) {
-      // Outbound call trigger failed, let fallback reschedule retry
+      console.error("Failed to trigger Twilio outbound call due to network/fetch error:", e);
     }
 
     attemptCount++;
@@ -207,8 +213,9 @@ export default {
       return new Response(null, { headers: corsHeaders });
     }
 
-    // Determine if request is from Twilio or from Frontend
-    const isTwilioRoute = url.pathname.startsWith("/twiml") || url.pathname === "/webhook";
+    // Determine if request is from Twilio or is a test call
+    const isTestCallRoute = url.pathname === "/test-call";
+    const isTwilioRoute = url.pathname.startsWith("/twiml") || url.pathname === "/webhook" || isTestCallRoute;
 
     if (!isTwilioRoute) {
       // Frontend Authenticated requests
@@ -247,6 +254,52 @@ export default {
 
       await stub.fetch("http://do/schedule", { method: "DELETE" });
       return new Response("Canceled", { headers: corsHeaders });
+    }
+
+    // Route: GET /test-call
+    if (url.pathname === "/test-call" && request.method === "GET") {
+      const secret = url.searchParams.get("secret") || request.headers.get("X-PingMe-Secret");
+      if (secret !== env.PINGME_SECRET) {
+        return new Response("Unauthorized", { status: 401, headers: corsHeaders });
+      }
+
+      const rawSettings = await env.PINGME_SETTINGS.get("settings");
+      const settings = rawSettings ? JSON.parse(rawSettings) : null;
+      if (!settings || !settings.phoneNumber) {
+        return new Response("Missing phone number in settings", { status: 400, headers: corsHeaders });
+      }
+
+      try {
+        const basicAuth = btoa(`${env.TWILIO_ACCOUNT_SID}:${env.TWILIO_AUTH_TOKEN}`);
+        const twilioUrl = `https://api.twilio.com/2010-04-01/Accounts/${env.TWILIO_ACCOUNT_SID}/Calls.json`;
+
+        const params = new URLSearchParams();
+        params.append("To", settings.phoneNumber);
+        params.append("From", env.TWILIO_PHONE_NUMBER);
+        params.append("Url", "http://demo.twilio.com/docs/voice.xml");
+
+        const response = await fetch(twilioUrl, {
+          method: "POST",
+          headers: {
+            "Authorization": `Basic ${basicAuth}`,
+            "Content-Type": "application/x-www-form-urlencoded"
+          },
+          body: params.toString()
+        });
+
+        const status = response.status;
+        const text = await response.text();
+
+        return new Response(JSON.stringify({ success: response.ok, status, response: text }), {
+          status: response.ok ? 200 : 500,
+          headers: { "Content-Type": "application/json", ...corsHeaders }
+        });
+      } catch (e: any) {
+        return new Response(JSON.stringify({ success: false, error: e.message }), {
+          status: 500,
+          headers: { "Content-Type": "application/json", ...corsHeaders }
+        });
+      }
     }
 
     // Route: GET /sync
