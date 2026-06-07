@@ -1,6 +1,9 @@
 import { Reminder, Settings, SyncResponse, SchedulePayload, Category } from '../types'
 
-const WORKER_URL = import.meta.env.VITE_WORKER_URL as string
+const rawUrl = import.meta.env.VITE_WORKER_URL as string
+const WORKER_URL = rawUrl && !rawUrl.startsWith('http://') && !rawUrl.startsWith('https://')
+  ? `https://${rawUrl}`
+  : rawUrl
 const SECRET = import.meta.env.VITE_PINGME_SECRET as string
 
 function headers(): HeadersInit {

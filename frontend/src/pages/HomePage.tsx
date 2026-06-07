@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom'
 import { getAllReminders, getAllCategories, deleteReminder, updateReminder, getSettings } from '../db'
 import { Reminder, Category, PresetTimes } from '../types'
 import { formatDateTime, getTodayOptions, getTomorrowOptions, isTonightPast } from '../services/timeUtils'
-import { rescheduleAll } from '../scheduler'
 import { cancelSchedule, scheduleReminder } from '../services/workerApi'
 
 interface Props {
@@ -92,7 +91,6 @@ export default function HomePage({ refreshKey }: Props) {
       setReminders(r)
       setCategories(c)
       if (s) setPresets(s.presets)
-      await rescheduleAll()
     }
     load()
   }, [refreshKey])
@@ -111,7 +109,6 @@ export default function HomePage({ refreshKey }: Props) {
       await deleteReminder(id)
       await cancelSchedule(id).catch(() => {})
       setReminders(prev => prev.filter(r => r.id !== id))
-      await rescheduleAll()
     }
     setSwipedReminderId(null)
   }
@@ -136,7 +133,6 @@ export default function HomePage({ refreshKey }: Props) {
       }
       await updateReminder(updated)
       await scheduleReminder(updated).catch(() => {})
-      await rescheduleAll()
 
       const r = await getAllReminders()
       setReminders(r)
@@ -198,7 +194,6 @@ export default function HomePage({ refreshKey }: Props) {
 
     await updateReminder(updated)
     await scheduleReminder(updated).catch(() => {})
-    await rescheduleAll()
     
     const r = await getAllReminders()
     setReminders(r)

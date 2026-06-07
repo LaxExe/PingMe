@@ -1,17 +1,13 @@
 import { useEffect, useState } from 'react'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import { seedDefaults, getAllReminders, updateReminder, getDB, triggerPushSync } from './db'
-import { rescheduleAll, setOnPing } from './scheduler'
 import { syncFromWorker, pullDbFromWorker } from './services/workerApi'
-import { Reminder } from './types'
 import HomePage from './pages/HomePage'
 import NewReminderPage from './pages/NewReminderPage'
 import SettingsPage from './pages/SettingsPage'
-import PingOverlay from './components/PingOverlay'
 import AppLayout from './components/AppLayout'
 
 export default function App() {
-  const [activePing, setActivePing] = useState<Reminder | null>(null)
   const [refreshKey, setRefreshKey] = useState(0)
 
   useEffect(() => {
@@ -42,9 +38,8 @@ export default function App() {
         // Fallback to local IndexedDB on network failure
         await seedDefaults()
       }
+      setRefreshKey(k => k + 1)
       await doSync()
-      setOnPing((reminder) => setActivePing(reminder))
-      await rescheduleAll()
     }
     init()
   }, [])
@@ -77,21 +72,12 @@ export default function App() {
     }
   }
 
-  function handlePingResolved() {
-    setActivePing(null)
-    setRefreshKey(k => k + 1)
-    rescheduleAll()
-  }
-
   return (
     <BrowserRouter>
-      {activePing && (
-        <PingOverlay reminder={activePing} onResolved={handlePingResolved} />
-      )}
       <AppLayout>
         <Routes>
           <Route path="/" element={<HomePage refreshKey={refreshKey} />} />
-          <Route path="/new" element={<NewReminderPage onSaved={() => { setRefreshKey(k => k + 1); rescheduleAll() }} />} />
+          <Route path="/new" element={<NewReminderPage onSaved={() => { setRefreshKey(k => k + 1) }} />} />
           <Route path="/settings" element={<SettingsPage />} />
         </Routes>
       </AppLayout>
