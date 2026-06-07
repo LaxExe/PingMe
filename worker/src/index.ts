@@ -15,12 +15,6 @@ async function pushSyncAction(env: Env, action: any) {
   await env.PINGME_SETTINGS.put("sync_queue", JSON.stringify(queue));
 }
 
-// Twilio voice configuration (e.g. "Polly.Joanna-Neural", "Polly.Matthew-Neural", "alice", "woman", "man")
-const TWILIO_VOICE = "Polly.Matthew-Neural";
-function say(text: string): string {
-  return `<Say voice="${TWILIO_VOICE}">${text}</Say>`;
-}
-
 // Time calculation helpers in user timezone
 function getSlotTimestamp(slotName: string, presets: any, userTz: string, isTomorrow: boolean): number {
   const [h, m] = presets[slotName].split(":").map(Number);
@@ -172,7 +166,7 @@ export class ReminderScheduler {
       params.append("StatusCallback", `${workerUrl}/webhook?reminderId=${reminderId}`);
       params.append("StatusCallbackEvent", "completed");
 
-      const response = await fetch(twilioUrl, {
+      await fetch(twilioUrl, {
         method: "POST",
         headers: {
           "Authorization": `Basic ${basicAuth}`,
@@ -180,14 +174,8 @@ export class ReminderScheduler {
         },
         body: params.toString()
       });
-      if (!response.ok) {
-        const errText = await response.text();
-        console.error(`Twilio API returned error (status ${response.status}): ${errText}`);
-      } else {
-        console.log(`Successfully triggered Twilio call. Status: ${response.status}`);
-      }
     } catch (e) {
-      console.error("Failed to trigger Twilio outbound call due to network/fetch error:", e);
+      // Outbound call trigger failed, let fallback reschedule retry
     }
 
     attemptCount++;
@@ -219,9 +207,8 @@ export default {
       return new Response(null, { headers: corsHeaders });
     }
 
-    // Determine if request is from Twilio or is a test call
-    const isTestCallRoute = url.pathname === "/test-call";
-    const isTwilioRoute = url.pathname.startsWith("/twiml") || url.pathname === "/webhook" || isTestCallRoute;
+    // Determine if request is from Twilio or from Frontend
+    const isTwilioRoute = url.pathname.startsWith("/twiml") || url.pathname === "/webhook";
 
     if (!isTwilioRoute) {
       // Frontend Authenticated requests
@@ -260,52 +247,6 @@ export default {
 
       await stub.fetch("http://do/schedule", { method: "DELETE" });
       return new Response("Canceled", { headers: corsHeaders });
-    }
-
-    // Route: GET /test-call
-    if (url.pathname === "/test-call" && request.method === "GET") {
-      const secret = url.searchParams.get("secret") || request.headers.get("X-PingMe-Secret");
-      if (secret !== env.PINGME_SECRET) {
-        return new Response("Unauthorized", { status: 401, headers: corsHeaders });
-      }
-
-      const rawSettings = await env.PINGME_SETTINGS.get("settings");
-      const settings = rawSettings ? JSON.parse(rawSettings) : null;
-      if (!settings || !settings.phoneNumber) {
-        return new Response("Missing phone number in settings", { status: 400, headers: corsHeaders });
-      }
-
-      try {
-        const basicAuth = btoa(`${env.TWILIO_ACCOUNT_SID}:${env.TWILIO_AUTH_TOKEN}`);
-        const twilioUrl = `https://api.twilio.com/2010-04-01/Accounts/${env.TWILIO_ACCOUNT_SID}/Calls.json`;
-
-        const params = new URLSearchParams();
-        params.append("To", settings.phoneNumber);
-        params.append("From", env.TWILIO_PHONE_NUMBER);
-        params.append("Url", "http://demo.twilio.com/docs/voice.xml");
-
-        const response = await fetch(twilioUrl, {
-          method: "POST",
-          headers: {
-            "Authorization": `Basic ${basicAuth}`,
-            "Content-Type": "application/x-www-form-urlencoded"
-          },
-          body: params.toString()
-        });
-
-        const status = response.status;
-        const text = await response.text();
-
-        return new Response(JSON.stringify({ success: response.ok, status, response: text }), {
-          status: response.ok ? 200 : 500,
-          headers: { "Content-Type": "application/json", ...corsHeaders }
-        });
-      } catch (e: any) {
-        return new Response(JSON.stringify({ success: false, error: e.message }), {
-          status: 500,
-          headers: { "Content-Type": "application/json", ...corsHeaders }
-        });
-      }
     }
 
     // Route: GET /sync
@@ -357,12 +298,11 @@ export default {
 
       const twiml = `<?xml version="1.0" encoding="UTF-8"?>
 <Response>
-  ${say(`Reminder: ${reminderText || "PingMe task"}.`)}
+  <Say>Hi ${name}, you have a reminder: ${reminderText || "PingMe scheduled task"}.</Say>
   <Gather numDigits="1" action="${url.origin}/twiml/gather?reminderId=${reminderId}&amp;step=main" timeout="15">
-    ${say("1 to snooze, 2 to push, 0 for done.")}
-    <Play>http://codeskulptor-demos.commondatastorage.googleapis.com/ping.mp3</Play>
+    <Say>Press 1 to snooze, press 2 to push to later, press 0 to mark as done.</Say>
   </Gather>
-  ${say("Sorry, try again.")}
+  <Say>Sorry, I didn't catch that.</Say>
   <Redirect>${url.origin}/twiml?reminderId=${reminderId}</Redirect>
 </Response>`;
 
@@ -396,14 +336,14 @@ export default {
             await pushSyncAction(env, { type: "rescheduled", reminderId, nextPingAt: status.nextPingAt });
             const twiml = `<?xml version="1.0" encoding="UTF-8"?>
 <Response>
-  ${say("Done. Next scheduled. Goodbye.")}
+  <Say>Done. Next occurrence scheduled. Goodbye.</Say>
 </Response>`;
             return new Response(twiml, { headers: { "Content-Type": "text/xml" } });
           } else {
             await pushSyncAction(env, { type: "done", reminderId });
             const twiml = `<?xml version="1.0" encoding="UTF-8"?>
 <Response>
-  ${say("Done. Deleted. Goodbye.")}
+  <Say>Done. Reminder deleted. Goodbye.</Say>
 </Response>`;
             return new Response(twiml, { headers: { "Content-Type": "text/xml" } });
           }
@@ -413,11 +353,10 @@ export default {
           // Snooze
           const twiml = `<?xml version="1.0" encoding="UTF-8"?>
 <Response>
+  <Say>How many minutes? Enter 1 to 3 digits then press hash.</Say>
   <Gather finishOnKey="#" action="${url.origin}/twiml/gather?reminderId=${reminderId}&amp;step=snooze" timeout="15">
-    ${say("Snooze minutes? Enter digits and press hash.")}
-    <Play>http://codeskulptor-demos.commondatastorage.googleapis.com/ping.mp3</Play>
   </Gather>
-  ${say("Sorry, try again.")}
+  <Say>Sorry, didn't catch that.</Say>
   <Redirect>${url.origin}/twiml/gather?reminderId=${reminderId}&amp;step=main&amp;Digits=1</Redirect>
 </Response>`;
           return new Response(twiml, { headers: { "Content-Type": "text/xml" } });
@@ -427,11 +366,10 @@ export default {
           // Push later
           const twiml = `<?xml version="1.0" encoding="UTF-8"?>
 <Response>
+  <Say>Press 1 for today, press 2 for tomorrow.</Say>
   <Gather numDigits="1" action="${url.origin}/twiml/gather?reminderId=${reminderId}&amp;step=push-day" timeout="15">
-    ${say("1 for today, 2 for tomorrow.")}
-    <Play>http://codeskulptor-demos.commondatastorage.googleapis.com/ping.mp3</Play>
   </Gather>
-  ${say("Sorry, try again.")}
+  <Say>Sorry, didn't catch that.</Say>
   <Redirect>${url.origin}/twiml/gather?reminderId=${reminderId}&amp;step=main&amp;Digits=2</Redirect>
 </Response>`;
           return new Response(twiml, { headers: { "Content-Type": "text/xml" } });
@@ -450,13 +388,13 @@ export default {
           await pushSyncAction(env, { type: "rescheduled", reminderId, nextPingAt });
           const twiml = `<?xml version="1.0" encoding="UTF-8"?>
 <Response>
-  ${say(`Snoozed ${minutes} minutes. Goodbye.`)}
+  <Say>Snoozed for ${minutes} minutes. Goodbye.</Say>
 </Response>`;
           return new Response(twiml, { headers: { "Content-Type": "text/xml" } });
         } else {
           const twiml = `<?xml version="1.0" encoding="UTF-8"?>
 <Response>
-  ${say("Invalid input.")}
+  <Say>Invalid minutes.</Say>
   <Redirect>${url.origin}/twiml/gather?reminderId=${reminderId}&amp;step=main&amp;Digits=1</Redirect>
 </Response>`;
           return new Response(twiml, { headers: { "Content-Type": "text/xml" } });
@@ -493,28 +431,26 @@ export default {
           if (available.length === 0) {
             const twiml = `<?xml version="1.0" encoding="UTF-8"?>
 <Response>
-  ${say("Today passed. Showing tomorrow.")}
+  <Say>Tonight's options have all passed. Showing tomorrow's options.</Say>
+  <Say>Press 1 morning, 2 afternoon, 3 evening, 4 night.</Say>
   <Gather numDigits="1" action="${url.origin}/twiml/gather?reminderId=${reminderId}&amp;step=push-tomorrow" timeout="15">
-    ${say("1 morning, 2 afternoon, 3 evening, 4 night.")}
-    <Play>http://codeskulptor-demos.commondatastorage.googleapis.com/ping.mp3</Play>
   </Gather>
-  ${say("Sorry, try again.")}
+  <Say>Sorry, didn't catch that.</Say>
   <Redirect>${url.origin}/twiml/gather?reminderId=${reminderId}&amp;step=push-day&amp;Digits=2</Redirect>
 </Response>`;
             return new Response(twiml, { headers: { "Content-Type": "text/xml" } });
           } else {
             let optionsText = "";
             available.forEach((s, idx) => {
-              optionsText += `${idx + 1} for ${s.name}. `;
+              optionsText += `Press ${idx + 1} for ${s.name}. `;
             });
 
             const twiml = `<?xml version="1.0" encoding="UTF-8"?>
 <Response>
+  <Say>${optionsText}</Say>
   <Gather numDigits="1" action="${url.origin}/twiml/gather?reminderId=${reminderId}&amp;step=push-today&amp;slots=${available.map(a => a.name).join(",")}" timeout="15">
-    ${say(optionsText)}
-    <Play>http://codeskulptor-demos.commondatastorage.googleapis.com/ping.mp3</Play>
   </Gather>
-  ${say("Sorry, try again.")}
+  <Say>Sorry, didn't catch that.</Say>
   <Redirect>${url.origin}/twiml/gather?reminderId=${reminderId}&amp;step=push-day&amp;Digits=1</Redirect>
 </Response>`;
             return new Response(twiml, { headers: { "Content-Type": "text/xml" } });
@@ -525,11 +461,10 @@ export default {
           // Tomorrow options (always all 4)
           const twiml = `<?xml version="1.0" encoding="UTF-8"?>
 <Response>
+  <Say>Press 1 morning, 2 afternoon, 3 evening, 4 night.</Say>
   <Gather numDigits="1" action="${url.origin}/twiml/gather?reminderId=${reminderId}&amp;step=push-tomorrow" timeout="15">
-    ${say("1 morning, 2 afternoon, 3 evening, 4 night.")}
-    <Play>http://codeskulptor-demos.commondatastorage.googleapis.com/ping.mp3</Play>
   </Gather>
-  ${say("Sorry, try again.")}
+  <Say>Sorry, didn't catch that.</Say>
   <Redirect>${url.origin}/twiml/gather?reminderId=${reminderId}&amp;step=push-day&amp;Digits=2</Redirect>
 </Response>`;
           return new Response(twiml, { headers: { "Content-Type": "text/xml" } });
@@ -553,13 +488,13 @@ export default {
           await pushSyncAction(env, { type: "rescheduled", reminderId, nextPingAt });
           const twiml = `<?xml version="1.0" encoding="UTF-8"?>
 <Response>
-  ${say(`Pushed to ${selectedSlot}. Goodbye.`)}
+  <Say>Pushed to today ${selectedSlot}. Goodbye.</Say>
 </Response>`;
           return new Response(twiml, { headers: { "Content-Type": "text/xml" } });
         } else {
           const twiml = `<?xml version="1.0" encoding="UTF-8"?>
 <Response>
-  ${say("Invalid option.")}
+  <Say>Invalid option.</Say>
   <Redirect>${url.origin}/twiml/gather?reminderId=${reminderId}&amp;step=push-day&amp;Digits=1</Redirect>
 </Response>`;
           return new Response(twiml, { headers: { "Content-Type": "text/xml" } });
@@ -582,13 +517,13 @@ export default {
           await pushSyncAction(env, { type: "rescheduled", reminderId, nextPingAt });
           const twiml = `<?xml version="1.0" encoding="UTF-8"?>
 <Response>
-  ${say(`Pushed to tomorrow ${selectedSlot}. Goodbye.`)}
+  <Say>Pushed to tomorrow ${selectedSlot}. Goodbye.</Say>
 </Response>`;
           return new Response(twiml, { headers: { "Content-Type": "text/xml" } });
         } else {
           const twiml = `<?xml version="1.0" encoding="UTF-8"?>
 <Response>
-  ${say("Invalid option.")}
+  <Say>Invalid option.</Say>
   <Redirect>${url.origin}/twiml/gather?reminderId=${reminderId}&amp;step=push-day&amp;Digits=2</Redirect>
 </Response>`;
           return new Response(twiml, { headers: { "Content-Type": "text/xml" } });
