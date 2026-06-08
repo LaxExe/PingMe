@@ -7,6 +7,14 @@ export interface Env {
   PINGME_SECRET: string;
 }
 
+
+
+const TWILIO_VOICE = "Polly.Matthew-Neural";
+
+function say(text: string): string {
+  return `<Say voice="${TWILIO_VOICE}">${text}</Say>`;
+}
+
 // Helper to push actions to the sync queue in KV
 async function pushSyncAction(env: Env, action: any) {
   const raw = await env.PINGME_SETTINGS.get("sync_queue");
@@ -20,6 +28,8 @@ function getSlotTimestamp(slotName: string, presets: any, userTz: string, isTomo
   const [h, m] = presets[slotName].split(":").map(Number);
   const now = new Date();
   
+  
+
   // Format current date in user's timezone to get YYYY-MM-DD
   const dateStr = new Intl.DateTimeFormat("en-CA", { 
     timeZone: userTz, 
@@ -298,11 +308,11 @@ export default {
 
       const twiml = `<?xml version="1.0" encoding="UTF-8"?>
 <Response>
-  <Say>Hi ${name}, you have a reminder: ${reminderText || "PingMe scheduled task"}.</Say>
+  ${say(`Hi ${name}, you have a reminder: ${reminderText || "PingMe scheduled task"}.`)}
   <Gather numDigits="1" action="${url.origin}/twiml/gather?reminderId=${reminderId}&amp;step=main" timeout="15">
-    <Say>Press 1 to snooze, press 2 to push to later, press 0 to mark as done.</Say>
+    ${say("Press 1 to snooze, press 2 to push, press 0 to mark as done.")}
   </Gather>
-  <Say>Sorry, I didn't catch that.</Say>
+  ${say("Sorry, I didn't catch that.")}
   <Redirect>${url.origin}/twiml?reminderId=${reminderId}</Redirect>
 </Response>`;
 
@@ -336,14 +346,14 @@ export default {
             await pushSyncAction(env, { type: "rescheduled", reminderId, nextPingAt: status.nextPingAt });
             const twiml = `<?xml version="1.0" encoding="UTF-8"?>
 <Response>
-  <Say>Done. Next occurrence scheduled. Goodbye.</Say>
+  ${say("Done. Next occurrence scheduled. Goodbye.")}
 </Response>`;
             return new Response(twiml, { headers: { "Content-Type": "text/xml" } });
           } else {
             await pushSyncAction(env, { type: "done", reminderId });
             const twiml = `<?xml version="1.0" encoding="UTF-8"?>
 <Response>
-  <Say>Done. Reminder deleted. Goodbye.</Say>
+  ${say("Done. Reminder deleted. Goodbye.")}
 </Response>`;
             return new Response(twiml, { headers: { "Content-Type": "text/xml" } });
           }
@@ -353,10 +363,10 @@ export default {
           // Snooze
           const twiml = `<?xml version="1.0" encoding="UTF-8"?>
 <Response>
-  <Say>How many minutes? Enter 1 to 3 digits then press hash.</Say>
+  ${say("How many minutes? Then press hash.")}
   <Gather finishOnKey="#" action="${url.origin}/twiml/gather?reminderId=${reminderId}&amp;step=snooze" timeout="15">
   </Gather>
-  <Say>Sorry, didn't catch that.</Say>
+  ${say("Sorry, didn't catch that.")}
   <Redirect>${url.origin}/twiml/gather?reminderId=${reminderId}&amp;step=main&amp;Digits=1</Redirect>
 </Response>`;
           return new Response(twiml, { headers: { "Content-Type": "text/xml" } });
@@ -366,10 +376,10 @@ export default {
           // Push later
           const twiml = `<?xml version="1.0" encoding="UTF-8"?>
 <Response>
-  <Say>Press 1 for today, press 2 for tomorrow.</Say>
+  ${say("Press 1 for today, press 2 for tomorrow.")}
   <Gather numDigits="1" action="${url.origin}/twiml/gather?reminderId=${reminderId}&amp;step=push-day" timeout="15">
   </Gather>
-  <Say>Sorry, didn't catch that.</Say>
+  ${say("Sorry, didn't catch that.")}
   <Redirect>${url.origin}/twiml/gather?reminderId=${reminderId}&amp;step=main&amp;Digits=2</Redirect>
 </Response>`;
           return new Response(twiml, { headers: { "Content-Type": "text/xml" } });
@@ -388,13 +398,13 @@ export default {
           await pushSyncAction(env, { type: "rescheduled", reminderId, nextPingAt });
           const twiml = `<?xml version="1.0" encoding="UTF-8"?>
 <Response>
-  <Say>Snoozed for ${minutes} minutes. Goodbye.</Say>
+  ${say(`Snoozed for ${minutes} minutes. Goodbye.`)}
 </Response>`;
           return new Response(twiml, { headers: { "Content-Type": "text/xml" } });
         } else {
           const twiml = `<?xml version="1.0" encoding="UTF-8"?>
 <Response>
-  <Say>Invalid minutes.</Say>
+  ${say("Invalid minutes.")}
   <Redirect>${url.origin}/twiml/gather?reminderId=${reminderId}&amp;step=main&amp;Digits=1</Redirect>
 </Response>`;
           return new Response(twiml, { headers: { "Content-Type": "text/xml" } });
@@ -431,11 +441,11 @@ export default {
           if (available.length === 0) {
             const twiml = `<?xml version="1.0" encoding="UTF-8"?>
 <Response>
-  <Say>Tonight's options have all passed. Showing tomorrow's options.</Say>
-  <Say>Press 1 morning, 2 afternoon, 3 evening, 4 night.</Say>
+  ${say("Tonight's options have all passed. Showing tomorrow's options.")}
+  ${say("Press 1 morning, 2 afternoon, 3 evening, 4 night.")}
   <Gather numDigits="1" action="${url.origin}/twiml/gather?reminderId=${reminderId}&amp;step=push-tomorrow" timeout="15">
   </Gather>
-  <Say>Sorry, didn't catch that.</Say>
+  ${say("Sorry, didn't catch that.")}
   <Redirect>${url.origin}/twiml/gather?reminderId=${reminderId}&amp;step=push-day&amp;Digits=2</Redirect>
 </Response>`;
             return new Response(twiml, { headers: { "Content-Type": "text/xml" } });
@@ -447,10 +457,10 @@ export default {
 
             const twiml = `<?xml version="1.0" encoding="UTF-8"?>
 <Response>
-  <Say>${optionsText}</Say>
+  ${say(optionsText)}
   <Gather numDigits="1" action="${url.origin}/twiml/gather?reminderId=${reminderId}&amp;step=push-today&amp;slots=${available.map(a => a.name).join(",")}" timeout="15">
   </Gather>
-  <Say>Sorry, didn't catch that.</Say>
+  ${say("Sorry, didn't catch that.")}
   <Redirect>${url.origin}/twiml/gather?reminderId=${reminderId}&amp;step=push-day&amp;Digits=1</Redirect>
 </Response>`;
             return new Response(twiml, { headers: { "Content-Type": "text/xml" } });
@@ -461,10 +471,10 @@ export default {
           // Tomorrow options (always all 4)
           const twiml = `<?xml version="1.0" encoding="UTF-8"?>
 <Response>
-  <Say>Press 1 morning, 2 afternoon, 3 evening, 4 night.</Say>
+  ${say("Press 1 morning, 2 afternoon, 3 evening, 4 night.")}
   <Gather numDigits="1" action="${url.origin}/twiml/gather?reminderId=${reminderId}&amp;step=push-tomorrow" timeout="15">
   </Gather>
-  <Say>Sorry, didn't catch that.</Say>
+  ${say("Sorry, didn't catch that.")}
   <Redirect>${url.origin}/twiml/gather?reminderId=${reminderId}&amp;step=push-day&amp;Digits=2</Redirect>
 </Response>`;
           return new Response(twiml, { headers: { "Content-Type": "text/xml" } });
@@ -488,13 +498,13 @@ export default {
           await pushSyncAction(env, { type: "rescheduled", reminderId, nextPingAt });
           const twiml = `<?xml version="1.0" encoding="UTF-8"?>
 <Response>
-  <Say>Pushed to today ${selectedSlot}. Goodbye.</Say>
+  ${say(`Pushed to today ${selectedSlot}. Goodbye.`)}
 </Response>`;
           return new Response(twiml, { headers: { "Content-Type": "text/xml" } });
         } else {
           const twiml = `<?xml version="1.0" encoding="UTF-8"?>
 <Response>
-  <Say>Invalid option.</Say>
+  ${say("Invalid option.")}
   <Redirect>${url.origin}/twiml/gather?reminderId=${reminderId}&amp;step=push-day&amp;Digits=1</Redirect>
 </Response>`;
           return new Response(twiml, { headers: { "Content-Type": "text/xml" } });
@@ -517,13 +527,13 @@ export default {
           await pushSyncAction(env, { type: "rescheduled", reminderId, nextPingAt });
           const twiml = `<?xml version="1.0" encoding="UTF-8"?>
 <Response>
-  <Say>Pushed to tomorrow ${selectedSlot}. Goodbye.</Say>
+  ${say(`Pushed to tomorrow ${selectedSlot}. Goodbye.`)}
 </Response>`;
           return new Response(twiml, { headers: { "Content-Type": "text/xml" } });
         } else {
           const twiml = `<?xml version="1.0" encoding="UTF-8"?>
 <Response>
-  <Say>Invalid option.</Say>
+  ${say("Invalid option.")}
   <Redirect>${url.origin}/twiml/gather?reminderId=${reminderId}&amp;step=push-day&amp;Digits=2</Redirect>
 </Response>`;
           return new Response(twiml, { headers: { "Content-Type": "text/xml" } });
