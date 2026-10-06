@@ -105,12 +105,16 @@ export default function HomePage({ refreshKey }: Props) {
   }
 
   const handleDelete = async (id: string) => {
-    if (confirm('Are you sure you want to delete this reminder?')) {
+    // Optimistically update UI so item is removed instantly
+    setReminders(prev => prev.filter(r => r.id !== id))
+    setSwipedReminderId(null)
+
+    try {
       await deleteReminder(id)
       await cancelSchedule(id).catch(() => {})
-      setReminders(prev => prev.filter(r => r.id !== id))
+    } catch (err) {
+      console.error('Error deleting reminder:', err)
     }
-    setSwipedReminderId(null)
   }
 
   // --- Drag and Drop Handlers ---
@@ -324,7 +328,13 @@ export default function HomePage({ refreshKey }: Props) {
                             }}
                           >
                             <button 
-                              onClick={() => handleDelete(reminder.id)}
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                handleDelete(reminder.id)
+                              }}
+                              onMouseDown={(e) => e.stopPropagation()}
+                              onTouchStart={(e) => e.stopPropagation()}
+                              onTouchEnd={(e) => e.stopPropagation()}
                               style={{
                                 width: '100%',
                                 height: '100%',
@@ -345,6 +355,11 @@ export default function HomePage({ refreshKey }: Props) {
                             onTouchStart={(e) => handleTouchStart(e, reminder.id)}
                             onTouchMove={handleTouchMove}
                             onTouchEnd={(e) => handleTouchEnd(e, reminder.id)}
+                            onClick={() => {
+                              if (isSwiped) {
+                                setSwipedReminderId(null)
+                              }
+                            }}
                             style={{
                               transform: isSwiped ? 'translateX(-80px)' : 'translateX(0px)',
                               cursor: 'grab'
@@ -401,6 +416,8 @@ export default function HomePage({ refreshKey }: Props) {
                                   e.stopPropagation()
                                   handleDelete(reminder.id)
                               }}
+                              onMouseDown={(e) => e.stopPropagation()}
+                              onTouchStart={(e) => e.stopPropagation()}
                               className="desktop-action-btn danger"
                               style={{
                                 position: 'absolute',

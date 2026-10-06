@@ -77,9 +77,11 @@ export default function SettingsPage() {
   }
 
   async function handleDeleteCategory(id: string) {
-    if (confirm('Are you sure you want to delete this category? Any reminders inside will be moved to Inbox.')) {
+    setCategories(prev => prev.filter(c => c.id !== id))
+    try {
       await deleteCategory(id)
-      setCategories(prev => prev.filter(c => c.id !== id))
+    } catch (err) {
+      console.error('Error deleting category:', err)
     }
   }
 
