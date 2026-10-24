@@ -95,6 +95,12 @@ export default function HomePage({ refreshKey }: Props) {
     load()
   }, [refreshKey])
 
+  // Concurrency & debounce guards
+  const deletingIdsRef = useRef<Set<string>>(new Set())
+  const isDroppingRef = useRef<boolean>(false)
+  const isReschedulingRef = useRef<boolean>(false)
+  const [isRescheduling, setIsRescheduling] = useState<boolean>(false)
+
   // --- Handlers ---
   const toggleCollapse = (catId: string, isPersistent: boolean) => {
     if (isPersistent) return // Persistent box never collapses
@@ -105,6 +111,9 @@ export default function HomePage({ refreshKey }: Props) {
   }
 
   const handleDelete = async (id: string) => {
+    if (deletingIdsRef.current.has(id)) return
+    deletingIdsRef.current.add(id)
+
     // Optimistically update UI so item is removed instantly
     setReminders(prev => prev.filter(r => r.id !== id))
     setSwipedReminderId(null)
@@ -114,6 +123,11 @@ export default function HomePage({ refreshKey }: Props) {
       await cancelSchedule(id).catch(() => {})
     } catch (err) {
       console.error('Error deleting reminder:', err)
+      // Rollback on failure
+      const r = await getAllReminders()
+      setReminders(r)
+    } finally {
+      deletingIdsRef.current.delete(id)
     }
   }
 
@@ -125,21 +139,32 @@ export default function HomePage({ refreshKey }: Props) {
 
   const handleDrop = async (e: React.DragEvent, targetCategoryId: string) => {
     e.preventDefault()
+    setDragOverCategoryId(null)
     const reminderId = e.dataTransfer.getData('text/plain') || draggedReminderId
-    if (!reminderId) return
+    if (!reminderId || isDroppingRef.current) return
 
     const reminder = reminders.find(r => r.id === reminderId)
     if (reminder && reminder.categoryId !== targetCategoryId) {
+      isDroppingRef.current = true
       const updated: Reminder = {
         ...reminder,
         categoryId: targetCategoryId,
         isPersistent: targetCategoryId === 'persistent'
       }
-      await updateReminder(updated)
-      await scheduleReminder(updated).catch(() => {})
 
-      const r = await getAllReminders()
-      setReminders(r)
+      // Optimistic update
+      setReminders(prev => prev.map(r => r.id === reminderId ? updated : r))
+
+      try {
+        await updateReminder(updated)
+        await scheduleReminder(updated).catch(() => {})
+      } catch (err) {
+        console.error('Error moving reminder:', err)
+        const r = await getAllReminders()
+        setReminders(r)
+      } finally {
+        isDroppingRef.current = false
+      }
     }
     setDraggedReminderId(null)
   }
@@ -186,22 +211,34 @@ export default function HomePage({ refreshKey }: Props) {
 
   // --- Reschedule Flow ---
   const handleRescheduleSelect = async (timestamp: number) => {
-    if (!reschedulingReminder) return
-    
+    if (!reschedulingReminder || isReschedulingRef.current) return
+    isReschedulingRef.current = true
+    setIsRescheduling(true)
+
+    const target = reschedulingReminder
     const updated: Reminder = {
-      ...reschedulingReminder,
+      ...target,
       nextPingAt: timestamp,
       attemptCount: 0,
       callsStopped: false,
       status: 'pending'
     }
 
-    await updateReminder(updated)
-    await scheduleReminder(updated).catch(() => {})
-    
-    const r = await getAllReminders()
-    setReminders(r)
+    // Optimistically update and close modal immediately to prevent repeated taps
+    setReminders(prev => prev.map(r => r.id === target.id ? updated : r))
     setReschedulingReminder(null)
+
+    try {
+      await updateReminder(updated)
+      await scheduleReminder(updated).catch(() => {})
+    } catch (err) {
+      console.error('Error rescheduling reminder:', err)
+      const r = await getAllReminders()
+      setReminders(r)
+    } finally {
+      isReschedulingRef.current = false
+      setIsRescheduling(false)
+    }
   }
 
   // Helper to format recurrence readable text
@@ -518,8 +555,18 @@ export default function HomePage({ refreshKey }: Props) {
                   {getTodayOptions(presets).map(opt => (
                     <button 
                       key={opt.slot} 
+                      disabled={isRescheduling}
                       onClick={() => handleRescheduleSelect(opt.timestamp)}
-                      style={{ width: '100%', padding: '12px 14px', textAlign: 'left', display: 'flex', justifyContent: 'space-between', background: 'var(--color-bg)' }}
+                      style={{ 
+                        width: '100%', 
+                        padding: '12px 14px', 
+                        textAlign: 'left', 
+                        display: 'flex', 
+                        justifyContent: 'space-between', 
+                        background: 'var(--color-bg)',
+                        opacity: isRescheduling ? 0.6 : 1,
+                        cursor: isRescheduling ? 'not-allowed' : 'pointer'
+                      }}
                     >
                       <span style={{ fontWeight: 600 }}>{opt.label}</span>
                       <span style={{ color: 'var(--color-text-secondary)' }}>
@@ -535,8 +582,18 @@ export default function HomePage({ refreshKey }: Props) {
               {getTomorrowOptions(presets).map(opt => (
                 <button 
                   key={opt.slot} 
+                  disabled={isRescheduling}
                   onClick={() => handleRescheduleSelect(opt.timestamp)}
-                  style={{ width: '100%', padding: '12px 14px', textAlign: 'left', display: 'flex', justifyContent: 'space-between', background: 'var(--color-bg)' }}
+                  style={{ 
+                    width: '100%', 
+                    padding: '12px 14px', 
+                    textAlign: 'left', 
+                    display: 'flex', 
+                    justifyContent: 'space-between', 
+                    background: 'var(--color-bg)',
+                    opacity: isRescheduling ? 0.6 : 1,
+                    cursor: isRescheduling ? 'not-allowed' : 'pointer'
+                  }}
                 >
                   <span style={{ fontWeight: 600 }}>{opt.label}</span>
                   <span style={{ color: 'var(--color-text-secondary)' }}>

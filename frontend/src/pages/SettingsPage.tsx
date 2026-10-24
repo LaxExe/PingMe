@@ -48,6 +48,10 @@ export default function SettingsPage() {
   const [editingCategoryId, setEditingCategoryId] = useState<string | null>(null)
   const [editingCategoryName, setEditingCategoryName] = useState('')
   const [saved, setSaved] = useState(false)
+  const [isSaving, setIsSaving] = useState(false)
+  const isSavingRef = useRef(false)
+  const [isAddingCategory, setIsAddingCategory] = useState(false)
+  const isAddingCategoryRef = useRef(false)
 
   useEffect(() => {
     async function load() {
@@ -59,33 +63,60 @@ export default function SettingsPage() {
   }, [])
 
   async function handleSave() {
-    if (!settings) return
-    await saveSettings(settings)
-    pushSettingsToWorker(settings).catch(() => {})
-    setSaved(true)
-    setTimeout(() => setSaved(false), 2000)
+    if (!settings || isSavingRef.current) return
+    isSavingRef.current = true
+    setIsSaving(true)
+
+    try {
+      await saveSettings(settings)
+      await pushSettingsToWorker(settings).catch(() => {})
+      setSaved(true)
+      setTimeout(() => setSaved(false), 2000)
+    } catch (err) {
+      console.error('Error saving settings:', err)
+    } finally {
+      isSavingRef.current = false
+      setIsSaving(false)
+    }
   }
 
   async function handleAddCategory(e?: React.FormEvent) {
     if (e) e.preventDefault()
-    if (!newCategoryName.trim()) return
-    const name = newCategoryName.trim()
-    const cat: Category = { id: generateId(), name, isPersistent: false, order: categories.length }
-    await addCategory(cat)
-    setCategories(prev => [...prev, cat])
-    setNewCategoryName('')
+    if (!newCategoryName.trim() || isAddingCategoryRef.current) return
+
+    isAddingCategoryRef.current = true
+    setIsAddingCategory(true)
+
+    try {
+      const name = newCategoryName.trim()
+      const cat: Category = { id: generateId(), name, isPersistent: false, order: categories.length }
+      await addCategory(cat)
+      setCategories(prev => [...prev, cat])
+      setNewCategoryName('')
+    } catch (err) {
+      console.error('Error adding category:', err)
+    } finally {
+      isAddingCategoryRef.current = false
+      setIsAddingCategory(false)
+    }
   }
 
   async function handleDeleteCategory(id: string) {
+    const cat = categories.find(c => c.id === id)
+    if (!cat || cat.isPersistent) return
+
     setCategories(prev => prev.filter(c => c.id !== id))
     try {
       await deleteCategory(id)
     } catch (err) {
       console.error('Error deleting category:', err)
+      const c = await getAllCategories()
+      setCategories(c)
     }
   }
 
   async function startEditing(cat: Category) {
+    if (cat.isPersistent) return
     setEditingCategoryId(cat.id)
     setEditingCategoryName(cat.name)
   }
@@ -97,9 +128,15 @@ export default function SettingsPage() {
     const cat = categories.find(c => c.id === id)
     if (!cat) return
     const updated = { ...cat, name }
-    await updateCategory(updated)
     setCategories(prev => prev.map(c => c.id === id ? updated : c))
     setEditingCategoryId(null)
+    try {
+      await updateCategory(updated)
+    } catch (err) {
+      console.error('Error renaming category:', err)
+      const c = await getAllCategories()
+      setCategories(c)
+    }
   }
 
   const [passcode, setPasscode] = useState('')
@@ -410,9 +447,20 @@ export default function SettingsPage() {
                   placeholder="New category name"
                   style={{ flex: 1, border: '1px solid var(--color-border)', borderRadius: 'var(--radius-md)', background: 'var(--color-bg)' }}
                 />
-                <button type="submit" className="primary" style={{ flexShrink: 0, display: 'inline-flex', alignItems: 'center' }}>
+                <button 
+                  type="submit" 
+                  disabled={isAddingCategory || !newCategoryName.trim()} 
+                  className="primary" 
+                  style={{ 
+                    flexShrink: 0, 
+                    display: 'inline-flex', 
+                    alignItems: 'center',
+                    opacity: isAddingCategory || !newCategoryName.trim() ? 0.6 : 1,
+                    cursor: isAddingCategory || !newCategoryName.trim() ? 'not-allowed' : 'pointer'
+                  }}
+                >
                   <PlusIcon />
-                  Add
+                  {isAddingCategory ? 'Adding...' : 'Add'}
                 </button>
               </form>
             </div>
@@ -422,6 +470,7 @@ export default function SettingsPage() {
         {/* Save Button */}
         <button 
           onClick={handleSave} 
+          disabled={isSaving}
           className="primary"
           style={{
             width: '100%',
@@ -429,10 +478,12 @@ export default function SettingsPage() {
             fontSize: 15,
             fontWeight: 700,
             borderRadius: 'var(--radius-lg)',
-            marginTop: 12
+            marginTop: 12,
+            opacity: isSaving ? 0.7 : 1,
+            cursor: isSaving ? 'not-allowed' : 'pointer'
           }}
         >
-          Save All Settings
+          {isSaving ? 'Saving Settings...' : 'Save All Settings'}
         </button>
       </div>
     </div>

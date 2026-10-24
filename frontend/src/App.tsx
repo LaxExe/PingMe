@@ -47,28 +47,40 @@ export default function App() {
   async function doSync() {
     try {
       const { actions } = await syncFromWorker()
+      if (!actions || actions.length === 0) return
+
+      const all = await getAllReminders()
+      let hasChanges = false
+
       for (const action of actions) {
-        if (action.type === 'done') {
-          const all = await getAllReminders()
-          const r = all.find(x => x.id === action.reminderId)
-          if (r) await updateReminder({ ...r, status: 'done' })
+        const r = all.find(x => x.id === action.reminderId)
+        if (!r) continue
+
+        if (action.type === 'done' && r.status !== 'done') {
+          r.status = 'done'
+          await updateReminder(r)
+          hasChanges = true
         } else if (action.type === 'rescheduled') {
-          const all = await getAllReminders()
-          const r = all.find(x => x.id === action.reminderId)
-          if (r) await updateReminder({ ...r, nextPingAt: action.nextPingAt, status: 'pending' })
-        } else if (action.type === 'callsStopped') {
-          const all = await getAllReminders()
-          const r = all.find(x => x.id === action.reminderId)
-          if (r) await updateReminder({ ...r, callsStopped: true })
+          r.nextPingAt = action.nextPingAt
+          r.status = 'pending'
+          await updateReminder(r)
+          hasChanges = true
+        } else if (action.type === 'callsStopped' && !r.callsStopped) {
+          r.callsStopped = true
+          await updateReminder(r)
+          hasChanges = true
         } else if (action.type === 'attemptIncremented') {
-          const all = await getAllReminders()
-          const r = all.find(x => x.id === action.reminderId)
-          if (r) await updateReminder({ ...r, attemptCount: action.attemptCount })
+          r.attemptCount = action.attemptCount
+          await updateReminder(r)
+          hasChanges = true
         }
       }
-      setRefreshKey(k => k + 1)
+
+      if (hasChanges) {
+        setRefreshKey(k => k + 1)
+      }
     } catch {
-      // Worker not configured yet — silent fail during development
+      // Worker not configured yet or offline
     }
   }
 

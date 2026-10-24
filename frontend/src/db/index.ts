@@ -102,15 +102,39 @@ export async function getReminder(id: string): Promise<Reminder | undefined> {
 
 import { pushDbToWorker } from '../services/workerApi'
 
-export async function triggerPushSync(): Promise<void> {
+let pushSyncTimer: ReturnType<typeof setTimeout> | null = null
+let isPushing = false
+let pendingPush = false
+
+async function executePushSync(): Promise<void> {
+  if (isPushing) {
+    pendingPush = true
+    return
+  }
+  isPushing = true
   try {
     const reminders = await getAllReminders()
     const categories = await getAllCategories()
     const settings = await getSettings()
     await pushDbToWorker({ reminders, categories, settings })
   } catch (e) {
-    // Silent fail if network or other error
+    console.error('Push sync to worker failed:', e)
+  } finally {
+    isPushing = false
+    if (pendingPush) {
+      pendingPush = false
+      executePushSync().catch(() => {})
+    }
   }
+}
+
+export async function triggerPushSync(): Promise<void> {
+  if (pushSyncTimer) {
+    clearTimeout(pushSyncTimer)
+  }
+  pushSyncTimer = setTimeout(() => {
+    executePushSync().catch(() => {})
+  }, 300)
 }
 
 export async function addReminder(reminder: Reminder): Promise<void> {

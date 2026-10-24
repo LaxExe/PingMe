@@ -28,6 +28,9 @@ export default function NewReminderPage({ onSaved }: Props) {
   // Validation errors
   const [errors, setErrors] = useState<{ text?: string; scheduledAt?: string }>({})
 
+  const [isSaving, setIsSaving] = useState(false)
+  const isSavingRef = useRef(false)
+
   // Format current time to YYYY-MM-DDTHH:MM for min attribute
   const getMinDateTimeString = () => {
     const now = new Date()
@@ -44,6 +47,8 @@ export default function NewReminderPage({ onSaved }: Props) {
   }, [])
 
   async function handleSave() {
+    if (isSavingRef.current) return
+
     const newErrors: { text?: string; scheduledAt?: string } = {}
     
     if (!text.trim()) {
@@ -64,41 +69,52 @@ export default function NewReminderPage({ onSaved }: Props) {
       return
     }
 
-    const ts = new Date(scheduledAt).getTime()
-    const settings = await getSettings()
+    isSavingRef.current = true
+    setIsSaving(true)
 
-    // Determine final recurrence ruleasdf
-    let finalRecurrence: RecurrenceRule = 'none'
-    if (recurrenceType === 'daily') finalRecurrence = 'daily'
-    else if (recurrenceType === 'weekly') finalRecurrence = 'weekly'
-    else if (recurrenceType === 'custom') {
-      const mins = parseInt(customInterval)
-      finalRecurrence = isNaN(mins) || mins <= 0 ? 'none' : mins
+    try {
+      const ts = new Date(scheduledAt).getTime()
+      const settings = await getSettings()
+
+      // Determine final recurrence rule
+      let finalRecurrence: RecurrenceRule = 'none'
+      if (recurrenceType === 'daily') finalRecurrence = 'daily'
+      else if (recurrenceType === 'weekly') finalRecurrence = 'weekly'
+      else if (recurrenceType === 'custom') {
+        const mins = parseInt(customInterval, 10)
+        finalRecurrence = isNaN(mins) || mins <= 0 ? 'none' : mins
+      }
+
+      const reminder: Reminder = {
+        id: generateId(),
+        text: text.trim(),
+        scheduledAt: ts,
+        nextPingAt: ts,
+        categoryId,
+        recurrence: finalRecurrence,
+        status: 'pending',
+        isPersistent: categoryId === 'persistent',
+        attemptCount: 0,
+        callsStopped: false,
+        createdAt: Date.now()
+      }
+
+      await addReminder(reminder)
+
+      // Register with Worker (non-blocking)
+      if (settings && settings.phoneNumber) {
+        await scheduleReminder(reminder).catch(() => {})
+      }
+
+      onSaved()
+      navigate('/')
+    } catch (err) {
+      console.error('Failed to create reminder:', err)
+      setErrors({ text: 'Failed to save reminder. Please try again.' })
+    } finally {
+      isSavingRef.current = false
+      setIsSaving(false)
     }
-
-    const reminder: Reminder = {
-      id: generateId(),
-      text: text.trim(),
-      scheduledAt: ts,
-      nextPingAt: ts,
-      categoryId,
-      recurrence: finalRecurrence,
-      status: 'pending',
-      isPersistent: categoryId === 'persistent',
-      attemptCount: 0,
-      callsStopped: false,
-      createdAt: Date.now()
-    }
-
-    await addReminder(reminder)
-
-    // Register with Worker (non-blocking)
-    if (settings && settings.phoneNumber) {
-      scheduleReminder(reminder).catch(() => {})
-    }
-
-    onSaved()
-    navigate('/')
   }
 
   return (
@@ -229,16 +245,19 @@ export default function NewReminderPage({ onSaved }: Props) {
         </button>
         <button
           onClick={handleSave}
+          disabled={isSaving}
           className="primary"
           style={{
             flex: 2,
             padding: 16,
             fontSize: 15,
             fontWeight: 700,
-            borderRadius: 'var(--radius-lg)'
+            borderRadius: 'var(--radius-lg)',
+            opacity: isSaving ? 0.7 : 1,
+            cursor: isSaving ? 'not-allowed' : 'pointer'
           }}
         >
-          Save Reminder
+          {isSaving ? 'Saving...' : 'Save Reminder'}
         </button>
       </div>
     </div>
